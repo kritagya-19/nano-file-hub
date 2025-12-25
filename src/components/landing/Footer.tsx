@@ -1,10 +1,11 @@
+import { Link } from "react-router-dom";
 import { Cloud } from "lucide-react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = [
-    { name: "Home", href: "#" },
+    { name: "Home", href: "/" },
     { name: "Features", href: "#features" },
     { name: "How It Works", href: "#how-it-works" },
     { name: "Use Cases", href: "#use-cases" },
@@ -12,8 +13,8 @@ const Footer = () => {
   ];
 
   const authLinks = [
-    { name: "Login", href: "#" },
-    { name: "Register", href: "#" },
+    { name: "Login", href: "/auth" },
+    { name: "Register", href: "/auth" },
   ];
 
   return (
@@ -59,12 +60,12 @@ const Footer = () => {
             <ul className="space-y-3">
               {authLinks.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-background/60 hover:text-background transition-colors text-sm"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
