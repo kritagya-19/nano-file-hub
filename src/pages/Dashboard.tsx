@@ -2,9 +2,11 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useFiles } from '@/hooks/useFiles';
+import { useGroups, useGroupDetails } from '@/hooks/useGroups';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +16,8 @@ import {
 } from '@/components/ui/dialog';
 import FileUploadZone from '@/components/files/FileUploadZone';
 import FileList from '@/components/files/FileList';
+import { GroupList } from '@/components/groups/GroupList';
+import { GroupView } from '@/components/groups/GroupView';
 import { 
   Cloud, 
   FolderOpen, 
@@ -23,7 +27,6 @@ import {
   Loader2,
   FileText,
   HardDrive,
-  Plus,
   ChevronRight,
   Home,
   FolderPlus,
@@ -35,6 +38,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  const [activeTab, setActiveTab] = useState<'files' | 'groups'>('files');
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [folderPath, setFolderPath] = useState<{ id: string | null; name: string }[]>([
     { id: null, name: 'My Files' }
@@ -43,6 +47,7 @@ const Dashboard = () => {
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [storageUsage, setStorageUsage] = useState({ used: 0, total: 5 * 1024 * 1024 * 1024 });
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   const {
     files,
@@ -55,6 +60,28 @@ const Dashboard = () => {
     getFileUrl,
     getStorageUsage,
   } = useFiles(currentFolderId);
+
+  const {
+    groups,
+    loading: groupsLoading,
+    createGroup,
+    joinGroup,
+    deleteGroup,
+    leaveGroup,
+  } = useGroups();
+
+  const {
+    group: selectedGroup,
+    members,
+    messages,
+    files: groupFiles,
+    loading: groupDetailsLoading,
+    sendMessage,
+    inviteByUsername,
+    removeMember,
+    shareFile,
+    unshareFile,
+  } = useGroupDetails(selectedGroupId);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -164,6 +191,22 @@ const Dashboard = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
+  const handleDeleteGroup = async (groupId: string): Promise<boolean> => {
+    const success = await deleteGroup(groupId);
+    if (success && selectedGroupId === groupId) {
+      setSelectedGroupId(null);
+    }
+    return success;
+  };
+
+  const handleLeaveGroup = async (groupId: string): Promise<boolean> => {
+    const success = await leaveGroup(groupId);
+    if (success && selectedGroupId === groupId) {
+      setSelectedGroupId(null);
+    }
+    return success;
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -234,11 +277,11 @@ const Dashboard = () => {
           <div className="glass-card rounded-2xl p-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-                <FolderOpen className="w-6 h-6 text-primary" />
+                <Users className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{folders.length}</p>
-                <p className="text-sm text-muted-foreground">Folders</p>
+                <p className="text-2xl font-bold text-foreground">{groups.length}</p>
+                <p className="text-sm text-muted-foreground">Groups</p>
               </div>
             </div>
           </div>
@@ -264,92 +307,157 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Actions & Breadcrumb */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-1 text-sm">
-            {folderPath.map((item, index) => (
-              <div key={item.id || 'root'} className="flex items-center gap-1">
-                {index > 0 && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
-                <button
-                  onClick={() => handleBreadcrumbClick(index)}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
-                    index === folderPath.length - 1
-                      ? 'text-foreground font-medium'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
-                >
-                  {index === 0 && <Home className="w-4 h-4" />}
-                  {item.name}
-                </button>
-              </div>
-            ))}
-          </nav>
+        {/* Main Content Tabs */}
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'files' | 'groups')} className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="files" className="flex items-center gap-2">
+              <FolderOpen className="h-4 w-4" />
+              My Files
+            </TabsTrigger>
+            <TabsTrigger value="groups" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Groups
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <FolderPlus className="w-4 h-4" />
-                  New Folder
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create New Folder</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  <Input
-                    placeholder="Folder name"
-                    value={newFolderName}
-                    onChange={(e) => setNewFolderName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreateFolder()}
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleCreateFolder}>Create</Button>
+          <TabsContent value="files" className="space-y-6">
+            {/* Actions & Breadcrumb */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              {/* Breadcrumb */}
+              <nav className="flex items-center gap-1 text-sm">
+                {folderPath.map((item, index) => (
+                  <div key={item.id || 'root'} className="flex items-center gap-1">
+                    {index > 0 && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                    <button
+                      onClick={() => handleBreadcrumbClick(index)}
+                      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
+                        index === folderPath.length - 1
+                          ? 'text-foreground font-medium'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      {index === 0 && <Home className="w-4 h-4" />}
+                      {item.name}
+                    </button>
                   </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                ))}
+              </nav>
 
-            <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
-              <DialogTrigger asChild>
-                <Button variant="hero" size="sm">
-                  <Upload className="w-4 h-4" />
-                  Upload Files
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Upload Files</DialogTitle>
-                </DialogHeader>
-                <div className="pt-4">
-                  <FileUploadZone 
-                    folderId={currentFolderId || undefined} 
-                    onUploadComplete={() => {
-                      refetch();
-                    }}
+              {/* Actions */}
+              <div className="flex items-center gap-2">
+                <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <FolderPlus className="w-4 h-4" />
+                      New Folder
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Folder</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-4">
+                      <Input
+                        placeholder="Folder name"
+                        value={newFolderName}
+                        onChange={(e) => setNewFolderName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleCreateFolder()}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleCreateFolder}>Create</Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="hero" size="sm">
+                      <Upload className="w-4 h-4" />
+                      Upload Files
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>Upload Files</DialogTitle>
+                    </DialogHeader>
+                    <div className="pt-4">
+                      <FileUploadZone 
+                        folderId={currentFolderId || undefined} 
+                        onUploadComplete={() => {
+                          refetch();
+                        }}
+                      />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+
+            {/* File List */}
+            <FileList
+              files={files}
+              folders={folders}
+              loading={filesLoading}
+              onFolderClick={handleFolderClick}
+              onDeleteFile={handleDeleteFile}
+              onDeleteFolder={handleDeleteFolder}
+              onDownloadFile={handleDownloadFile}
+            />
+          </TabsContent>
+
+          <TabsContent value="groups" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[500px]">
+              {/* Groups Sidebar */}
+              <div className="lg:col-span-1">
+                <div className="glass-card rounded-2xl p-4">
+                  <h3 className="font-semibold mb-4">Your Groups</h3>
+                  <GroupList
+                    groups={groups}
+                    loading={groupsLoading}
+                    selectedGroupId={selectedGroupId}
+                    onSelectGroup={setSelectedGroupId}
+                    onCreateGroup={createGroup}
+                    onJoinGroup={joinGroup}
+                    onDeleteGroup={handleDeleteGroup}
+                    onLeaveGroup={handleLeaveGroup}
                   />
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
+              </div>
 
-        {/* File List */}
-        <FileList
-          files={files}
-          folders={folders}
-          loading={filesLoading}
-          onFolderClick={handleFolderClick}
-          onDeleteFile={handleDeleteFile}
-          onDeleteFolder={handleDeleteFolder}
-          onDownloadFile={handleDownloadFile}
-        />
+              {/* Group Content */}
+              <div className="lg:col-span-2">
+                <div className="glass-card rounded-2xl h-full min-h-[500px]">
+                  {selectedGroupId && selectedGroup ? (
+                    <GroupView
+                      group={selectedGroup}
+                      members={members}
+                      messages={messages}
+                      files={groupFiles}
+                      loading={groupDetailsLoading}
+                      onSendMessage={sendMessage}
+                      onInviteByUsername={inviteByUsername}
+                      onRemoveMember={removeMember}
+                      onShareFile={shareFile}
+                      onUnshareFile={unshareFile}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      <div className="text-center">
+                        <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium">Select a group</p>
+                        <p className="text-sm">Choose a group from the sidebar to view its content</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

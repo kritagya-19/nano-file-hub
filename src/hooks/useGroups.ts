@@ -119,22 +119,20 @@ export const useGroups = () => {
     if (!user) return false;
 
     try {
-      // Find group by invite code - we need to do this in a different way
-      // since we can't see groups we're not members of
-      const { data: existingMembership } = await supabase
-        .from('group_members')
-        .select('id')
-        .eq('user_id', user.id);
+      const { data, error } = await supabase.rpc('join_group_by_code', { 
+        code: inviteCode 
+      });
 
-      // Try to insert directly - the RLS allows users to add themselves
-      const { data: groupData, error: groupError } = await supabase
-        .rpc('join_group_by_code', { code: inviteCode });
-
-      if (groupError) {
-        // Fallback: try to find if already a member
+      if (error) {
+        const errorMessage = error.message.includes('Already a member')
+          ? 'You are already a member of this group'
+          : error.message.includes('Invalid invite code')
+          ? 'Invalid invite code'
+          : 'Failed to join group';
+        
         toast({
           title: 'Error',
-          description: 'Invalid invite code or already a member',
+          description: errorMessage,
           variant: 'destructive',
         });
         return false;
@@ -250,44 +248,81 @@ export const useGroupDetails = (groupId: string | null) => {
       if (groupError) throw groupError;
       setGroup(groupData);
 
-      // Fetch members with profiles
+      // Fetch members
       const { data: membersData, error: membersError } = await supabase
         .from('group_members')
-        .select(`
-          *,
-          profile:profiles(full_name, email, username)
-        `)
+        .select('*')
         .eq('group_id', groupId)
         .order('joined_at', { ascending: true });
 
       if (membersError) throw membersError;
-      setMembers(membersData || []);
 
-      // Fetch messages with profiles
+      // Fetch profiles for members
+      const memberUserIds = membersData?.map(m => m.user_id) || [];
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, username')
+        .in('id', memberUserIds);
+
+      const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+      
+      const membersWithProfiles: GroupMember[] = (membersData || []).map(m => ({
+        ...m,
+        role: m.role as 'owner' | 'admin' | 'member',
+        profile: profilesMap.get(m.user_id) || undefined,
+      }));
+      
+      setMembers(membersWithProfiles);
+
+      // Fetch messages
       const { data: messagesData, error: messagesError } = await supabase
         .from('group_messages')
-        .select(`
-          *,
-          profile:profiles(full_name, username)
-        `)
+        .select('*')
         .eq('group_id', groupId)
         .order('created_at', { ascending: true });
 
       if (messagesError) throw messagesError;
-      setMessages(messagesData || []);
+
+      // Fetch profiles for message authors
+      const messageUserIds = [...new Set(messagesData?.map(m => m.user_id) || [])];
+      const { data: messageProfilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, username')
+        .in('id', messageUserIds);
+
+      const messageProfilesMap = new Map(messageProfilesData?.map(p => [p.id, p]) || []);
+      
+      const messagesWithProfiles: GroupMessage[] = (messagesData || []).map(m => ({
+        ...m,
+        profile: messageProfilesMap.get(m.user_id) || undefined,
+      }));
+      
+      setMessages(messagesWithProfiles);
 
       // Fetch shared files
-      const { data: filesData, error: filesError } = await supabase
+      const { data: groupFilesData, error: filesError } = await supabase
         .from('group_files')
-        .select(`
-          *,
-          file:files(id, name, original_name, size, mime_type, storage_path)
-        `)
+        .select('*')
         .eq('group_id', groupId)
         .order('shared_at', { ascending: false });
 
       if (filesError) throw filesError;
-      setFiles(filesData || []);
+
+      // Fetch file details
+      const fileIds = groupFilesData?.map(gf => gf.file_id) || [];
+      const { data: filesData } = await supabase
+        .from('files')
+        .select('id, name, original_name, size, mime_type, storage_path')
+        .in('id', fileIds);
+
+      const filesMap = new Map(filesData?.map(f => [f.id, f]) || []);
+      
+      const filesWithDetails: GroupFile[] = (groupFilesData || []).map(gf => ({
+        ...gf,
+        file: filesMap.get(gf.file_id) || undefined,
+      }));
+      
+      setFiles(filesWithDetails);
 
     } catch (error: any) {
       console.error('Error fetching group details:', error);
@@ -307,10 +342,7 @@ export const useGroupDetails = (groupId: string | null) => {
           user_id: user.id,
           content: content.trim(),
         })
-        .select(`
-          *,
-          profile:profiles(full_name, username)
-        `)
+        .select()
         .single();
 
       if (error) throw error;
@@ -335,9 +367,11 @@ export const useGroupDetails = (groupId: string | null) => {
         .from('profiles')
         .select('id')
         .eq('username', username)
-        .single();
+        .maybeSingle();
 
-      if (profileError || !profileData) {
+      if (profileError) throw profileError;
+      
+      if (!profileData) {
         toast({
           title: 'Error',
           description: 'User not found',
@@ -502,7 +536,11 @@ export const useGroupDetails = (groupId: string | null) => {
             .single();
 
           const newMessage: GroupMessage = {
-            ...payload.new as GroupMessage,
+            id: payload.new.id,
+            group_id: payload.new.group_id,
+            user_id: payload.new.user_id,
+            content: payload.new.content,
+            created_at: payload.new.created_at,
             profile: profileData || undefined,
           };
           
