@@ -11,6 +11,7 @@ export interface FileItem {
   storage_path: string;
   folder_id: string | null;
   is_public: boolean;
+  share_token: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -160,6 +161,53 @@ export const useFiles = (folderId?: string | null) => {
     return data?.signedUrl || null;
   }, []);
 
+  const shareFile = useCallback(async (fileId: string) => {
+    try {
+      // Generate a unique share token
+      const shareToken = crypto.randomUUID();
+      
+      const { data, error } = await supabase
+        .from('files')
+        .update({ is_public: true, share_token: shareToken })
+        .eq('id', fileId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update local state
+      setFiles(prev => prev.map(f => f.id === fileId ? { ...f, is_public: true, share_token: shareToken } : f));
+      
+      return shareToken;
+    } catch (err: any) {
+      console.error('Error sharing file:', err);
+      throw err;
+    }
+  }, []);
+
+  const unshareFile = useCallback(async (fileId: string) => {
+    try {
+      const { error } = await supabase
+        .from('files')
+        .update({ is_public: false, share_token: null })
+        .eq('id', fileId);
+
+      if (error) throw error;
+
+      // Update local state
+      setFiles(prev => prev.map(f => f.id === fileId ? { ...f, is_public: false, share_token: null } : f));
+      
+      return true;
+    } catch (err: any) {
+      console.error('Error unsharing file:', err);
+      throw err;
+    }
+  }, []);
+
+  const getShareLink = useCallback((shareToken: string) => {
+    return `${window.location.origin}/share/${shareToken}`;
+  }, []);
+
   const getStorageUsage = useCallback(async () => {
     if (!user) return { used: 0, total: 5 * 1024 * 1024 * 1024 }; // 5GB default
 
@@ -190,5 +238,8 @@ export const useFiles = (folderId?: string | null) => {
     deleteFolder,
     getFileUrl,
     getStorageUsage,
+    shareFile,
+    unshareFile,
+    getShareLink,
   };
 };

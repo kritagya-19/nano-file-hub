@@ -59,6 +59,9 @@ const Dashboard = () => {
     deleteFolder,
     getFileUrl,
     getStorageUsage,
+    shareFile: shareFileWithLink,
+    unshareFile: unshareFileLink,
+    getShareLink,
   } = useFiles(currentFolderId);
 
   const {
@@ -406,6 +409,9 @@ const Dashboard = () => {
               onDeleteFile={handleDeleteFile}
               onDeleteFolder={handleDeleteFolder}
               onDownloadFile={handleDownloadFile}
+              onShareFile={async (file) => await shareFileWithLink(file.id)}
+              onUnshareFile={async (file) => await unshareFileLink(file.id)}
+              getShareLink={getShareLink}
             />
           </TabsContent>
 
