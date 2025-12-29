@@ -10,17 +10,23 @@ import {
   MoreVertical,
   Download,
   Trash2,
-  ExternalLink
+  Share2,
+  Link,
+  Link2Off,
+  Copy,
+  Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { FileItem, FolderItem } from '@/hooks/useFiles';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface FileListProps {
   files: FileItem[];
@@ -30,6 +36,9 @@ interface FileListProps {
   onDeleteFile: (file: FileItem) => void;
   onDeleteFolder: (folder: FolderItem) => void;
   onDownloadFile: (file: FileItem) => void;
+  onShareFile?: (file: FileItem) => Promise<string | null>;
+  onUnshareFile?: (file: FileItem) => Promise<boolean>;
+  getShareLink?: (shareToken: string) => string;
 }
 
 const getFileIcon = (mimeType: string | null) => {
@@ -67,8 +76,14 @@ const FileList = ({
   onDeleteFile,
   onDeleteFolder,
   onDownloadFile,
+  onShareFile,
+  onUnshareFile,
+  getShareLink,
 }: FileListProps) => {
+  const { toast } = useToast();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [sharingId, setSharingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -146,15 +161,82 @@ const FileList = ({
       {files.map((file) => {
         const FileIcon = getFileIcon(file.mime_type);
         const isDeleting = deletingId === file.id;
+        const isSharing = sharingId === file.id;
+        const isShared = file.is_public && file.share_token;
+
+        const handleShare = async () => {
+          if (!onShareFile || !getShareLink) return;
+          setSharingId(file.id);
+          try {
+            const token = await onShareFile(file);
+            if (token) {
+              const link = getShareLink(token);
+              await navigator.clipboard.writeText(link);
+              setCopiedId(file.id);
+              toast({
+                title: 'Link copied!',
+                description: 'Share link has been copied to clipboard',
+              });
+              setTimeout(() => setCopiedId(null), 2000);
+            }
+          } catch (err) {
+            toast({
+              title: 'Error',
+              description: 'Failed to share file',
+              variant: 'destructive',
+            });
+          } finally {
+            setSharingId(null);
+          }
+        };
+
+        const handleUnshare = async () => {
+          if (!onUnshareFile) return;
+          setSharingId(file.id);
+          try {
+            await onUnshareFile(file);
+            toast({
+              title: 'Link removed',
+              description: 'File is no longer shared',
+            });
+          } catch (err) {
+            toast({
+              title: 'Error',
+              description: 'Failed to remove share link',
+              variant: 'destructive',
+            });
+          } finally {
+            setSharingId(null);
+          }
+        };
+
+        const handleCopyLink = async () => {
+          if (!getShareLink || !file.share_token) return;
+          const link = getShareLink(file.share_token);
+          await navigator.clipboard.writeText(link);
+          setCopiedId(file.id);
+          toast({
+            title: 'Link copied!',
+            description: 'Share link has been copied to clipboard',
+          });
+          setTimeout(() => setCopiedId(null), 2000);
+        };
 
         return (
           <div
             key={file.id}
             className={cn(
-              'glass-card rounded-2xl p-4 hover-lift group transition-all',
+              'glass-card rounded-2xl p-4 hover-lift group transition-all relative',
               isDeleting && 'opacity-50 pointer-events-none'
             )}
           >
+            {isShared && (
+              <div className="absolute top-2 left-2">
+                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center" title="Shared">
+                  <Link className="w-3 h-3 text-primary" />
+                </div>
+              </div>
+            )}
             <div className="flex items-start justify-between">
               <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-3">
                 <FileIcon className="w-6 h-6 text-muted-foreground" />
@@ -165,6 +247,7 @@ const FileList = ({
                     variant="ghost"
                     size="icon"
                     className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                    disabled={isSharing}
                   >
                     <MoreVertical className="w-4 h-4" />
                   </Button>
@@ -174,6 +257,35 @@ const FileList = ({
                     <Download className="w-4 h-4 mr-2" />
                     Download
                   </DropdownMenuItem>
+                  
+                  {onShareFile && onUnshareFile && getShareLink && (
+                    <>
+                      <DropdownMenuSeparator />
+                      {isShared ? (
+                        <>
+                          <DropdownMenuItem onClick={handleCopyLink}>
+                            {copiedId === file.id ? (
+                              <Check className="w-4 h-4 mr-2 text-green-500" />
+                            ) : (
+                              <Copy className="w-4 h-4 mr-2" />
+                            )}
+                            Copy Link
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleUnshare}>
+                            <Link2Off className="w-4 h-4 mr-2" />
+                            Remove Link
+                          </DropdownMenuItem>
+                        </>
+                      ) : (
+                        <DropdownMenuItem onClick={handleShare}>
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Share with Link
+                        </DropdownMenuItem>
+                      )}
+                    </>
+                  )}
+                  
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={async () => {
                       setDeletingId(file.id);

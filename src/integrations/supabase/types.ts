@@ -23,6 +23,7 @@ export type Database = {
           mime_type: string | null
           name: string
           original_name: string
+          share_token: string | null
           size: number
           storage_path: string
           updated_at: string
@@ -36,6 +37,7 @@ export type Database = {
           mime_type?: string | null
           name: string
           original_name: string
+          share_token?: string | null
           size: number
           storage_path: string
           updated_at?: string
@@ -49,6 +51,7 @@ export type Database = {
           mime_type?: string | null
           name?: string
           original_name?: string
+          share_token?: string | null
           size?: number
           storage_path?: string
           updated_at?: string
