@@ -1,13 +1,21 @@
+import { cn } from "@/lib/utils";
 import { 
   RefreshCw, 
   Cloud, 
   Users, 
   Shield, 
   Zap, 
-  Download
+  Download,
+  LucideIcon
 } from "lucide-react";
 
-const features = [
+interface Feature {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}
+
+const features: Feature[] = [
   {
     icon: RefreshCw,
     title: "Resumable Uploads",
@@ -42,42 +50,131 @@ const features = [
 
 const Features = () => {
   return (
-    <section id="features" className="py-20 lg:py-32 bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="features" className="relative py-24 lg:py-32 bg-background overflow-hidden">
+      {/* Subtle background elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 -left-32 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-32 w-64 h-64 bg-accent/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-secondary text-secondary-foreground text-sm font-medium mb-4">
-            Features
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+          <div
+            className={cn(
+              "inline-flex items-center gap-2 px-4 py-1.5 rounded-full",
+              "bg-primary/10 border border-primary/20",
+              "mb-6 animate-appear"
+            )}
+          >
+            <span className="text-sm font-medium text-primary">Features</span>
+          </div>
+          
+          <h2
+            className={cn(
+              "text-3xl sm:text-4xl lg:text-5xl",
+              "font-bold tracking-tight",
+              "mb-6 animate-appear opacity-0",
+              "[animation-delay:100ms]"
+            )}
+          >
             Everything You Need for{" "}
-            <span className="gradient-text">File Sharing</span>
+            <span className="text-gradient">File Sharing</span>
           </h2>
-          <p className="text-lg text-muted-foreground">
+          
+          <p
+            className={cn(
+              "text-lg text-muted-foreground",
+              "max-w-2xl mx-auto",
+              "animate-appear opacity-0",
+              "[animation-delay:200ms]"
+            )}
+          >
             Built with modern technology to give you the best file transfer experience.
             Simple, secure, and reliable.
           </p>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        {/* Features Grid - Bento Style */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           {features.map((feature, index) => (
             <div
               key={feature.title}
-              className="group glass-card rounded-2xl p-6 lg:p-8 hover-lift hover-glow transition-all duration-300"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className={cn(
+                "group relative",
+                "bg-card rounded-2xl",
+                "border border-border/50",
+                "p-6 lg:p-8",
+                "transition-all duration-300",
+                "hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5",
+                "animate-appear opacity-0",
+                // Make first two cards larger on desktop
+                index === 0 && "lg:col-span-2",
+                index === 3 && "lg:col-span-2"
+              )}
+              style={{ animationDelay: `${300 + index * 100}ms` }}
             >
-              <div className="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center mb-6 shadow-card group-hover:shadow-glow transition-shadow duration-300">
-                <feature.icon className="w-7 h-7 text-primary-foreground" />
+              {/* Icon */}
+              <div
+                className={cn(
+                  "w-12 h-12 rounded-xl",
+                  "bg-gradient-to-br from-primary to-primary/80",
+                  "flex items-center justify-center",
+                  "mb-5 shadow-lg shadow-primary/20",
+                  "group-hover:scale-110 transition-transform duration-300"
+                )}
+              >
+                <feature.icon className="w-6 h-6 text-primary-foreground" />
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">
+
+              {/* Content */}
+              <h3 className="text-xl font-semibold text-foreground mb-2">
                 {feature.title}
               </h3>
               <p className="text-muted-foreground leading-relaxed">
                 {feature.description}
               </p>
+
+              {/* Subtle gradient overlay on hover */}
+              <div
+                className={cn(
+                  "absolute inset-0 rounded-2xl opacity-0",
+                  "bg-gradient-to-br from-primary/5 via-transparent to-accent/5",
+                  "transition-opacity duration-300",
+                  "group-hover:opacity-100",
+                  "pointer-events-none"
+                )}
+              />
             </div>
           ))}
+        </div>
+
+        {/* Bottom highlight */}
+        <div
+          className={cn(
+            "mt-16 text-center",
+            "animate-appear opacity-0",
+            "[animation-delay:900ms]"
+          )}
+        >
+          <div className="inline-flex items-center gap-4 px-6 py-3 rounded-full bg-muted/50 border border-border/50">
+            <div className="flex -space-x-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-background flex items-center justify-center"
+                >
+                  <span className="text-xs font-medium text-primary">
+                    {String.fromCharCode(64 + i)}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="h-4 w-px bg-border" />
+            <p className="text-sm text-muted-foreground">
+              Trusted by <span className="font-semibold text-foreground">10,000+</span> users worldwide
+            </p>
+          </div>
         </div>
       </div>
     </section>
