@@ -79,7 +79,12 @@ const Features = () => {
             )}
           >
             File Sharing That{" "}
-            <span className="text-gradient">Actually Works</span>
+            <span className="relative inline-block">
+              <span className="text-gradient">Actually Works</span>
+              <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
+                <path d="M2 10C50 4 150 4 198 10" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" className="opacity-60"/>
+              </svg>
+            </span>
           </h2>
           
           <p
