@@ -26,7 +26,10 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/files" element={<Files />} />
+            <Route path="/dashboard/groups" element={<Dashboard />} />
+            <Route path="/dashboard/shared" element={<Dashboard />} />
             <Route path="/dashboard/settings" element={<Settings />} />
+            <Route path="/dashboard/help" element={<Dashboard />} />
             <Route path="/share/:shareToken" element={<Share />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
