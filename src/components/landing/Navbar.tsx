@@ -29,17 +29,17 @@ const NavbarComponent = () => {
       {/* Desktop Navigation */}
       <NavBody>
         <NavbarLogo href="#">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
-            <Cloud className="w-4 h-4 text-primary-foreground" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20">
+            <Cloud className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="text-foreground">
-            Nano<span className="text-primary">File</span>
+          <span className="text-foreground text-xl">
+            Nano<span className="text-primary font-extrabold">File</span>
           </span>
         </NavbarLogo>
 
         <NavItems items={navItems} />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {!loading && user ? (
             <NavbarButton href="/dashboard" variant="gradient">
               Dashboard
@@ -47,10 +47,10 @@ const NavbarComponent = () => {
           ) : (
             <>
               <Link to="/auth">
-                <NavbarButton variant="secondary">Login</NavbarButton>
+                <NavbarButton variant="secondary">Sign In</NavbarButton>
               </Link>
               <Link to="/auth">
-                <NavbarButton variant="gradient">Get Started</NavbarButton>
+                <NavbarButton variant="gradient">Start Free</NavbarButton>
               </Link>
             </>
           )}
@@ -61,11 +61,11 @@ const NavbarComponent = () => {
       <MobileNav>
         <MobileNavHeader>
           <NavbarLogo href="#">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
-              <Cloud className="w-4 h-4 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20">
+              <Cloud className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-foreground">
-              Nano<span className="text-primary">File</span>
+            <span className="text-foreground text-xl">
+              Nano<span className="text-primary font-extrabold">File</span>
             </span>
           </NavbarLogo>
           <MobileNavToggle
@@ -83,12 +83,12 @@ const NavbarComponent = () => {
               key={`mobile-link-${idx}`}
               href={item.link}
               onClick={() => setIsMobileMenuOpen(false)}
-              className="relative text-neutral-600 dark:text-neutral-300 w-full py-2"
+              className="relative text-foreground/80 hover:text-foreground w-full py-3 px-2 text-base font-medium transition-colors rounded-lg hover:bg-muted/50"
             >
               {item.name}
             </a>
           ))}
-          <div className="flex w-full flex-col gap-2 pt-4 border-t border-border">
+          <div className="flex w-full flex-col gap-3 pt-6 mt-2 border-t border-border/50">
             {!loading && user ? (
               <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
                 <NavbarButton variant="gradient" className="w-full">
@@ -99,12 +99,12 @@ const NavbarComponent = () => {
               <>
                 <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
                   <NavbarButton variant="secondary" className="w-full">
-                    Login
+                    Sign In
                   </NavbarButton>
                 </Link>
                 <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
                   <NavbarButton variant="gradient" className="w-full">
-                    Get Started
+                    Start Free
                   </NavbarButton>
                 </Link>
               </>
