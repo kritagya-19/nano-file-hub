@@ -6,6 +6,7 @@ import type React from "react";
 interface HowItWorksProps extends React.HTMLAttributes<HTMLDivElement> {
   badge?: string;
   title?: string;
+  titleHighlight?: string;
   subtitle?: string;
   steps: StepData[];
 }
@@ -106,6 +107,7 @@ export const HowItWorksSection: React.FC<HowItWorksProps> = ({
   className,
   badge = "How it works",
   title,
+  titleHighlight,
   subtitle,
   steps,
   ...props
@@ -137,7 +139,15 @@ export const HowItWorksSection: React.FC<HowItWorksProps> = ({
 
           {title && (
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl text-foreground">
-              {title}
+              {title}{" "}
+              {titleHighlight && (
+                <span className="relative inline-block">
+                  <span className="text-gradient">{titleHighlight}</span>
+                  <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
+                    <path d="M2 10C50 4 150 4 198 10" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" className="opacity-60"/>
+                  </svg>
+                </span>
+              )}
             </h2>
           )}
 
