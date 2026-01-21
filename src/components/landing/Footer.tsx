@@ -1,46 +1,46 @@
 import { Link } from "react-router-dom";
-import { Cloud } from "lucide-react";
+import { Cloud, ArrowRight } from "lucide-react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = [
-    { name: "Home", href: "/" },
     { name: "Features", href: "#features" },
     { name: "How It Works", href: "#how-it-works" },
     { name: "Use Cases", href: "#use-cases" },
-    { name: "Security", href: "#security" },
-  ];
-
-  const authLinks = [
-    { name: "Login", href: "/auth" },
-    { name: "Register", href: "/auth" },
   ];
 
   return (
-    <footer className="bg-foreground text-background py-16">
+    <footer className="bg-foreground text-background py-16 lg:py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <a href="#" className="inline-flex items-center gap-2.5 mb-4">
-              <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
+            <a href="#" className="inline-flex items-center gap-2.5 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
                 <Cloud className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="text-xl font-bold">
                 Nano<span className="text-primary">File</span>
               </span>
             </a>
-            <p className="text-background/60 max-w-md leading-relaxed">
-              A modern file exchange system designed for students, teams, and organizations. 
-              Fast, secure, and reliable file sharing with resumable uploads and hybrid storage.
+            <p className="text-background/60 max-w-md leading-relaxed mb-6">
+              The file sharing platform that doesn't make you want to throw your computer out the window. 
+              Fast, secure, and actually reliable.
             </p>
+            <Link 
+              to="/auth"
+              className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
+            >
+              Start sharing for free
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
 
           {/* Navigation */}
           <div>
-            <h4 className="font-semibold mb-4">Navigation</h4>
-            <ul className="space-y-3">
+            <h4 className="font-semibold mb-6">Product</h4>
+            <ul className="space-y-4">
               {footerLinks.map((link) => (
                 <li key={link.name}>
                   <a
@@ -56,18 +56,24 @@ const Footer = () => {
 
           {/* Auth */}
           <div>
-            <h4 className="font-semibold mb-4">Account</h4>
-            <ul className="space-y-3">
-              {authLinks.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-background/60 hover:text-background transition-colors text-sm"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
+            <h4 className="font-semibold mb-6">Get Started</h4>
+            <ul className="space-y-4">
+              <li>
+                <Link
+                  to="/auth"
+                  className="text-background/60 hover:text-background transition-colors text-sm"
+                >
+                  Create free account
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/auth"
+                  className="text-background/60 hover:text-background transition-colors text-sm"
+                >
+                  Sign in
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -76,10 +82,10 @@ const Footer = () => {
         <div className="border-t border-background/10 pt-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-background/50">
-              © {currentYear} Nano File Exchange System. All rights reserved.
+              © {currentYear} NanoFile. All rights reserved.
             </p>
             <p className="text-sm text-background/50">
-              Built with ❤️ for better file sharing
+              Made for teams who value their time ⚡
             </p>
           </div>
         </div>

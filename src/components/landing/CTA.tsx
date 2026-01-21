@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Sparkles, Check, Zap } from "lucide-react";
+import { ArrowRight, Sparkles, Check, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 
 const CTA = () => {
-  const benefits = [
-    "No credit card required",
-    "10GB free storage",
-    "Unlimited file sharing",
+  const guarantees = [
+    "Free forever plan available",
+    "No credit card to start",
+    "Cancel anytime",
   ];
 
   return (
@@ -43,11 +43,11 @@ const CTA = () => {
           >
             <Sparkles className="w-4 h-4 text-white" />
             <span className="text-sm font-medium text-white">
-              Start for free today
+              Join 10,000+ happy teams
             </span>
           </motion.div>
 
-          {/* Heading */}
+          {/* Heading - Urgency + FOMO */}
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -60,9 +60,9 @@ const CTA = () => {
               "mb-6"
             )}
           >
-            Ready to Transform Your{" "}
+            Your Team Is Waiting.{" "}
             <span className="relative">
-              <span className="relative z-10">File Sharing?</span>
+              <span className="relative z-10">Your Files Aren't.</span>
               <svg 
                 className="absolute -bottom-2 left-0 w-full h-3 text-accent/50" 
                 viewBox="0 0 200 12" 
@@ -79,7 +79,7 @@ const CTA = () => {
             </span>
           </motion.h2>
 
-          {/* Description */}
+          {/* Description - Remove friction */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -87,8 +87,8 @@ const CTA = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-10"
           >
-            Join thousands of teams who trust NanoFile for secure, fast, and 
-            reliable file transfers. Get started in seconds.
+            Stop wrestling with failed uploads and scattered files. 
+            Start your free account now and share your first file in under 60 seconds.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -97,7 +97,7 @@ const CTA = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
+            className="flex flex-col sm:flex-row gap-4 justify-center mb-10"
           >
             <Link to="/auth">
               <button className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-semibold text-primary bg-white rounded-xl shadow-lg shadow-black/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
@@ -105,23 +105,17 @@ const CTA = () => {
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
             </Link>
-            <a href="#features">
-              <button className="inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-300">
-                <Zap className="w-5 h-5" />
-                See How It Works
-              </button>
-            </a>
           </motion.div>
 
-          {/* Benefits */}
+          {/* Trust signals */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-6"
+            className="flex flex-wrap items-center justify-center gap-6 mb-12"
           >
-            {benefits.map((benefit, index) => (
+            {guarantees.map((guarantee, index) => (
               <div 
                 key={index}
                 className="flex items-center gap-2 text-white/90"
@@ -129,34 +123,23 @@ const CTA = () => {
                 <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
                   <Check className="w-3 h-3 text-white" />
                 </div>
-                <span className="text-sm font-medium">{benefit}</span>
+                <span className="text-sm font-medium">{guarantee}</span>
               </div>
             ))}
           </motion.div>
 
-          {/* Floating stats cards */}
+          {/* Security badge */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4"
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
           >
-            {[
-              { value: "10K+", label: "Active Users" },
-              { value: "50M+", label: "Files Shared" },
-              { value: "99.9%", label: "Uptime" },
-            ].map((stat, index) => (
-              <div
-                key={index}
-                className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center hover:bg-white/15 transition-colors duration-300"
-              >
-                <div className="text-3xl sm:text-4xl font-bold text-white mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-white/70">{stat.label}</div>
-              </div>
-            ))}
+            <Shield className="w-5 h-5 text-white" />
+            <span className="text-sm text-white/90">
+              256-bit SSL encryption • SOC 2 Type II compliant • GDPR ready
+            </span>
           </motion.div>
         </div>
       </div>

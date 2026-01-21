@@ -1,76 +1,151 @@
-import { GraduationCap, Briefcase, Building2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { GraduationCap, Briefcase, Building2, Check } from "lucide-react";
+import { motion } from "framer-motion";
 
 const useCases = [
   {
     icon: GraduationCap,
-    title: "For Students",
-    description: "Share lecture notes, project files, and assignments with classmates. Perfect for group projects and study groups.",
-    features: ["Share notes easily", "Group project files", "Resume interrupted uploads"],
+    title: "Students & Educators",
+    subtitle: "Ace your group projects",
+    description: "No more \"I didn't get the file\" excuses. Share lecture notes, research papers, and project files that everyone can actually access — even at 2 AM before the deadline.",
+    features: [
+      "Share files too big for email",
+      "Group folders for every class",
+      "Works on any device"
+    ],
+    stat: "50K+",
+    statLabel: "students use NanoFile"
   },
   {
     icon: Briefcase,
-    title: "For Project Teams",
-    description: "Collaborate on files in real-time, chat with team members, and keep all project assets in one place.",
-    features: ["Real-time collaboration", "Team chat", "Version control friendly"],
+    title: "Remote Teams",
+    subtitle: "Stay in sync, anywhere",
+    description: "Scattered across time zones? Your files aren't. Real-time collaboration with built-in chat means fewer meetings and more getting things done.",
+    features: [
+      "Real-time file updates",
+      "Team chat built in",
+      "No version confusion"
+    ],
+    stat: "3x",
+    statLabel: "faster project delivery"
   },
   {
     icon: Building2,
-    title: "For Organizations",
-    description: "Secure file sharing for small teams and departments. Manage access and keep sensitive files protected.",
-    features: ["Secure access control", "Large file support", "Reliable storage"],
+    title: "Growing Businesses",
+    subtitle: "Enterprise security, startup speed",
+    description: "Your client files deserve bank-level protection without the bank-level complexity. SOC 2 compliant security that your IT team will actually approve.",
+    features: [
+      "256-bit encryption",
+      "Access controls",
+      "Audit logs"
+    ],
+    stat: "99.9%",
+    statLabel: "uptime guarantee"
   },
 ];
 
 const UseCases = () => {
   return (
-    <section id="use-cases" className="py-20 lg:py-32 bg-muted/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="use-cases" className="relative py-24 lg:py-32 bg-muted/30 overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/3 -left-32 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 -right-32 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-secondary text-secondary-foreground text-sm font-medium mb-4">
-            Use Cases
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Perfect For{" "}
-            <span className="gradient-text">Everyone</span>
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            Designed to fit the needs of students, teams, and organizations alike.
-          </p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6"
+          >
+            <span className="text-sm font-medium text-primary">Built For You</span>
+          </motion.div>
+          
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-6"
+          >
+            Whether You're a Team of{" "}
+            <span className="text-gradient">One or One Thousand</span>
+          </motion.h2>
+          
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-lg text-muted-foreground max-w-2xl mx-auto"
+          >
+            NanoFile scales with you. Start free, grow without limits.
+          </motion.p>
         </div>
 
         {/* Use Cases Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {useCases.map((useCase, index) => (
-            <div
+            <motion.div
               key={useCase.title}
-              className="group glass-card rounded-3xl p-8 lg:p-10 hover-lift hover-glow transition-all duration-300"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 * index }}
+              className={cn(
+                "group relative",
+                "bg-card rounded-3xl",
+                "border border-border/50",
+                "p-8 lg:p-10",
+                "transition-all duration-300",
+                "hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5"
+              )}
             >
               {/* Icon */}
-              <div className="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center mb-6 shadow-card group-hover:shadow-glow transition-shadow duration-300">
-                <useCase.icon className="w-8 h-8 text-primary-foreground" />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mb-6 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
+                <useCase.icon className="w-7 h-7 text-primary-foreground" />
               </div>
 
-              {/* Content */}
+              {/* Subtitle */}
+              <p className="text-sm font-medium text-primary mb-2">{useCase.subtitle}</p>
+
+              {/* Title */}
               <h3 className="text-2xl font-bold text-foreground mb-4">
                 {useCase.title}
               </h3>
+
+              {/* Description */}
               <p className="text-muted-foreground leading-relaxed mb-6">
                 {useCase.description}
               </p>
 
               {/* Features */}
-              <ul className="space-y-3">
+              <ul className="space-y-3 mb-8">
                 {useCase.features.map((feature) => (
                   <li key={feature} className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <Check className="w-3 h-3 text-primary" />
                     </div>
                     <span className="text-sm text-foreground">{feature}</span>
                   </li>
                 ))}
               </ul>
-            </div>
+
+              {/* Stat */}
+              <div className="pt-6 border-t border-border/50">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-primary">{useCase.stat}</span>
+                  <span className="text-sm text-muted-foreground">{useCase.statLabel}</span>
+                </div>
+              </div>
+
+              {/* Hover gradient */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            </motion.div>
           ))}
         </div>
       </div>

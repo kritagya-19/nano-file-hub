@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Mockup } from "@/components/ui/mockup";
 import { Glow } from "@/components/ui/glow";
-import { Github, ArrowRight, Upload } from "lucide-react";
+import { Play, ArrowRight, Upload } from "lucide-react";
 
 const Hero = () => {
   return (
@@ -16,7 +16,24 @@ const Hero = () => {
     >
       <div className="container mx-auto max-w-6xl relative z-10">
         <div className="flex flex-col items-center text-center">
-          {/* Heading */}
+          {/* Trust Badge */}
+          <div
+            className={cn(
+              "inline-flex items-center gap-2 px-4 py-2 rounded-full",
+              "bg-primary/10 border border-primary/20",
+              "mb-6 animate-appear"
+            )}
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            <span className="text-sm font-medium text-primary">
+              Trusted by 10,000+ teams worldwide
+            </span>
+          </div>
+
+          {/* Heading - Pain point → Solution */}
           <h1
             className={cn(
               "text-gradient",
@@ -27,10 +44,10 @@ const Hero = () => {
               "leading-[1.1]"
             )}
           >
-            Share Files Effortlessly with Next-Gen Transfers
+            Stop Losing Files. Start Sharing Smarter.
           </h1>
 
-          {/* Description */}
+          {/* Description - Benefit focused */}
           <p
             className={cn(
               "text-muted-foreground",
@@ -41,10 +58,12 @@ const Hero = () => {
               "[animation-delay:200ms]"
             )}
           >
-            Experience lightning-fast uploads with resumable transfers, end-to-end encryption, and seamless hybrid storage for teams of any size.
+            Upload files up to 10GB that <span className="text-foreground font-medium">never fail mid-transfer</span>. 
+            Our resumable uploads pick up right where you left off — even if your internet drops. 
+            Finally, file sharing that just works.
           </p>
 
-          {/* CTAs */}
+          {/* CTAs - Clear action + lower commitment option */}
           <div
             className={cn(
               "flex flex-col sm:flex-row gap-4",
@@ -54,16 +73,40 @@ const Hero = () => {
           >
             <Link to="/auth">
               <Button size="lg" className="gap-2 shadow-lg">
-                Start Free Today
+                Start Free — No Card Required
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-            <a href="#features">
+            <a href="#how-it-works">
               <Button size="lg" variant="outline" className="gap-2">
-                <Github className="w-4 h-4" />
-                Explore Features
+                <Play className="w-4 h-4" />
+                See How It Works
               </Button>
             </a>
+          </div>
+
+          {/* Social proof micro-stats */}
+          <div
+            className={cn(
+              "flex flex-wrap items-center justify-center gap-8 mt-10",
+              "animate-appear opacity-0",
+              "[animation-delay:500ms]"
+            )}
+          >
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground">50M+</p>
+              <p className="text-xs text-muted-foreground">Files Transferred</p>
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground">99.9%</p>
+              <p className="text-xs text-muted-foreground">Uptime</p>
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground">4.9★</p>
+              <p className="text-xs text-muted-foreground">User Rating</p>
+            </div>
           </div>
 
           {/* Mockup */}
