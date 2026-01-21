@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Files from "./pages/Files";
 import Groups from "./pages/Groups";
+import Shared from "./pages/Shared";
 import Settings from "./pages/Settings";
 import Share from "./pages/Share";
 import NotFound from "./pages/NotFound";
@@ -28,7 +29,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/files" element={<Files />} />
             <Route path="/dashboard/groups" element={<Groups />} />
-            <Route path="/dashboard/shared" element={<Dashboard />} />
+            <Route path="/dashboard/shared" element={<Shared />} />
             <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/dashboard/help" element={<Dashboard />} />
             <Route path="/share/:shareToken" element={<Share />} />
