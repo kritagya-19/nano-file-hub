@@ -73,7 +73,12 @@ const UseCases = () => {
             className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-6"
           >
             Whether You're a Team of{" "}
-            <span className="text-gradient">One or One Thousand</span>
+            <span className="relative inline-block">
+              <span className="text-gradient">One or One Thousand</span>
+              <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
+                <path d="M2 10C50 4 150 4 198 10" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" className="opacity-60"/>
+              </svg>
+            </span>
           </motion.h2>
           
           <motion.p

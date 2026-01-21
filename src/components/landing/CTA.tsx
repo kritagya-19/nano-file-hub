@@ -61,20 +61,10 @@ const CTA = () => {
             )}
           >
             Your Team Is Waiting.{" "}
-            <span className="relative">
+            <span className="relative inline-block">
               <span className="relative z-10">Your Files Aren't.</span>
-              <svg 
-                className="absolute -bottom-2 left-0 w-full h-3 text-accent/50" 
-                viewBox="0 0 200 12" 
-                preserveAspectRatio="none"
-              >
-                <path 
-                  d="M0,8 Q50,0 100,8 T200,8" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="4" 
-                  strokeLinecap="round"
-                />
+              <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
+                <path d="M2 10C50 4 150 4 198 10" stroke="white" strokeWidth="3" strokeLinecap="round" className="opacity-60"/>
               </svg>
             </span>
           </motion.h2>
