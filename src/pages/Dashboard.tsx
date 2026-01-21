@@ -1,94 +1,41 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { useFiles } from '@/hooks/useFiles';
-import { useGroups, useGroupDetails } from '@/hooks/useGroups';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
+import { useFiles } from "@/hooks/useFiles";
+import { useGroups } from "@/hooks/useGroups";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { QuickAction } from "@/components/dashboard/QuickAction";
+import { RecentFiles } from "@/components/dashboard/RecentFiles";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import FileUploadZone from '@/components/files/FileUploadZone';
-import FileList from '@/components/files/FileList';
-import { GroupList } from '@/components/groups/GroupList';
-import { GroupView } from '@/components/groups/GroupView';
-import { 
-  Cloud, 
-  FolderOpen, 
-  Users, 
-  Settings, 
-  LogOut,
   Loader2,
   FileText,
+  Users,
   HardDrive,
-  ChevronRight,
-  Home,
+  Upload,
   FolderPlus,
-  Upload
-} from 'lucide-react';
+  UserPlus,
+  Share2,
+  ArrowRight,
+  Sparkles,
+  Clock,
+  TrendingUp,
+} from "lucide-react";
 
 const Dashboard = () => {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  
-  const [activeTab, setActiveTab] = useState<'files' | 'groups'>('files');
-  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [folderPath, setFolderPath] = useState<{ id: string | null; name: string }[]>([
-    { id: null, name: 'My Files' }
-  ]);
-  const [newFolderName, setNewFolderName] = useState('');
-  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [storageUsage, setStorageUsage] = useState({ used: 0, total: 5 * 1024 * 1024 * 1024 });
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
-  const {
-    files,
-    folders,
-    loading: filesLoading,
-    refetch,
-    deleteFile,
-    createFolder,
-    deleteFolder,
-    getFileUrl,
-    getStorageUsage,
-    shareFile: shareFileWithLink,
-    unshareFile: unshareFileLink,
-    getShareLink,
-  } = useFiles(currentFolderId);
-
-  const {
-    groups,
-    loading: groupsLoading,
-    createGroup,
-    joinGroup,
-    deleteGroup,
-    leaveGroup,
-  } = useGroups();
-
-  const {
-    group: selectedGroup,
-    members,
-    messages,
-    files: groupFiles,
-    loading: groupDetailsLoading,
-    sendMessage,
-    inviteByUsername,
-    removeMember,
-    shareFile,
-    unshareFile,
-  } = useGroupDetails(selectedGroupId);
+  const { files, loading: filesLoading, getStorageUsage } = useFiles(null);
+  const { groups, loading: groupsLoading } = useGroups();
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate("/auth");
     }
   }, [user, authLoading, navigate]);
 
@@ -99,116 +46,6 @@ const Dashboard = () => {
     };
     fetchStorageUsage();
   }, [getStorageUsage, files]);
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
-  const handleFolderClick = useCallback((folderId: string) => {
-    const folder = folders.find(f => f.id === folderId);
-    if (folder) {
-      setCurrentFolderId(folderId);
-      setFolderPath(prev => [...prev, { id: folderId, name: folder.name }]);
-    }
-  }, [folders]);
-
-  const handleBreadcrumbClick = useCallback((index: number) => {
-    const newPath = folderPath.slice(0, index + 1);
-    setFolderPath(newPath);
-    setCurrentFolderId(newPath[newPath.length - 1].id);
-  }, [folderPath]);
-
-  const handleCreateFolder = async () => {
-    if (!newFolderName.trim()) return;
-
-    try {
-      await createFolder(newFolderName.trim(), currentFolderId);
-      setNewFolderName('');
-      setIsCreateFolderOpen(false);
-      toast({
-        title: 'Folder created',
-        description: `"${newFolderName}" has been created.`,
-      });
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to create folder',
-        description: error.message,
-      });
-    }
-  };
-
-  const handleDeleteFile = async (file: any) => {
-    try {
-      await deleteFile(file.id, file.storage_path);
-      toast({
-        title: 'File deleted',
-        description: `"${file.original_name}" has been deleted.`,
-      });
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to delete file',
-        description: error.message,
-      });
-    }
-  };
-
-  const handleDeleteFolder = async (folder: any) => {
-    try {
-      await deleteFolder(folder.id);
-      toast({
-        title: 'Folder deleted',
-        description: `"${folder.name}" has been deleted.`,
-      });
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to delete folder',
-        description: error.message,
-      });
-    }
-  };
-
-  const handleDownloadFile = async (file: any) => {
-    try {
-      const url = await getFileUrl(file.storage_path);
-      if (url) {
-        window.open(url, '_blank');
-      }
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to download file',
-        description: error.message,
-      });
-    }
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  };
-
-  const handleDeleteGroup = async (groupId: string): Promise<boolean> => {
-    const success = await deleteGroup(groupId);
-    if (success && selectedGroupId === groupId) {
-      setSelectedGroupId(null);
-    }
-    return success;
-  };
-
-  const handleLeaveGroup = async (groupId: string): Promise<boolean> => {
-    const success = await leaveGroup(groupId);
-    if (success && selectedGroupId === groupId) {
-      setSelectedGroupId(null);
-    }
-    return success;
-  };
 
   if (authLoading) {
     return (
@@ -222,250 +59,219 @@ const Dashboard = () => {
     return null;
   }
 
-  const usagePercent = (storageUsage.used / storageUsage.total) * 100;
+  const formatStorage = (bytes: number) => {
+    const gb = bytes / (1024 * 1024 * 1024);
+    return gb >= 1 ? `${gb.toFixed(1)} GB` : `${(bytes / (1024 * 1024)).toFixed(0)} MB`;
+  };
+
+  const usagePercent = Math.round((storageUsage.used / storageUsage.total) * 100);
+  const greeting = new Date().getHours() < 12 ? "Good morning" : new Date().getHours() < 18 ? "Good afternoon" : "Good evening";
+
+  const recentFiles = files.slice(0, 5).map((file) => ({
+    id: file.id,
+    name: file.original_name,
+    size: file.size,
+    type: file.mime_type || "application/octet-stream",
+    updatedAt: file.updated_at,
+  }));
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <a href="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl gradient-bg flex items-center justify-center shadow-card">
-                <Cloud className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-bold text-foreground">
-                Nano<span className="gradient-text">File</span>
-              </span>
-            </a>
+    <DashboardLayout storageUsed={storageUsage.used} storageTotal={storageUsage.total}>
+      <div className="p-6 lg:p-8 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              {greeting}, {user.user_metadata?.full_name?.split(" ")[0] || "there"}! 👋
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Here's what's happening with your files today.
+            </p>
+          </motion.div>
 
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon">
-                <Settings className="w-5 h-5" />
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="flex items-center gap-3"
+          >
+            <Link to="/dashboard/files">
+              <Button variant="outline" className="rounded-xl">
+                <FolderPlus className="w-4 h-4 mr-2" />
+                New Folder
               </Button>
-              <div className="flex items-center gap-3">
-                <div className="hidden sm:block text-right">
-                  <p className="text-sm font-medium text-foreground">
-                    {user.user_metadata?.full_name || 'User'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                </div>
-                <div className="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-primary-foreground font-semibold">
-                  {(user.user_metadata?.full_name?.[0] || user.email?.[0] || 'U').toUpperCase()}
-                </div>
-              </div>
-              <Button variant="ghost" size="icon" onClick={handleSignOut}>
-                <LogOut className="w-5 h-5" />
+            </Link>
+            <Link to="/dashboard/files">
+              <Button className="rounded-xl shadow-lg shadow-primary/25">
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Files
               </Button>
-            </div>
-          </div>
+            </Link>
+          </motion.div>
         </div>
-      </header>
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-          <div className="glass-card rounded-2xl p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-                <FileText className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{files.length}</p>
-                <p className="text-sm text-muted-foreground">Files</p>
-              </div>
-            </div>
-          </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <StatCard
+            title="Total Files"
+            value={files.length}
+            subtitle="Across all folders"
+            icon={FileText}
+            trend={{ value: 12, isPositive: true }}
+          />
+          <StatCard
+            title="Active Groups"
+            value={groups.length}
+            subtitle="Collaborations"
+            icon={Users}
+          />
+          <StatCard
+            title="Storage Used"
+            value={`${usagePercent}%`}
+            subtitle={`${formatStorage(storageUsage.used)} of ${formatStorage(storageUsage.total)}`}
+            icon={HardDrive}
+          />
+          <StatCard
+            title="Shared Files"
+            value={files.filter((f) => f.is_public).length}
+            subtitle="Public links active"
+            icon={Share2}
+          />
+        </div>
 
-          <div className="glass-card rounded-2xl p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-                <Users className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{groups.length}</p>
-                <p className="text-sm text-muted-foreground">Groups</p>
-              </div>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Quick Actions */}
+          <div className="lg:col-span-1 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>
             </div>
-          </div>
-
-          <div className="glass-card rounded-2xl p-6">
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-                <HardDrive className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {formatFileSize(storageUsage.used)} / {formatFileSize(storageUsage.total)}
-                </p>
-                <p className="text-xs text-muted-foreground">Storage Used</p>
-              </div>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full gradient-bg rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(usagePercent, 100)}%` }}
+            <div className="space-y-3">
+              <QuickAction
+                title="Upload Files"
+                description="Drag and drop or browse to upload"
+                icon={Upload}
+                href="/dashboard/files"
+                color="primary"
+              />
+              <QuickAction
+                title="Create Group"
+                description="Start collaborating with your team"
+                icon={UserPlus}
+                href="/dashboard/groups"
+                color="secondary"
+              />
+              <QuickAction
+                title="Share Files"
+                description="Generate secure sharing links"
+                icon={Share2}
+                href="/dashboard/shared"
+                color="accent"
               />
             </div>
+
+            {/* Upgrade Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className={cn(
+                "relative p-6 rounded-2xl overflow-hidden",
+                "bg-gradient-to-br from-primary via-primary/90 to-primary/80"
+              )}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+              <div className="relative z-10">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-4">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Upgrade to Pro</h3>
+                <p className="text-sm text-white/80 mb-4">
+                  Get 100GB storage, priority support, and advanced features.
+                </p>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  className="bg-white text-primary hover:bg-white/90"
+                >
+                  Upgrade Now
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Recent Files */}
+          <div className="lg:col-span-2">
+            <div className={cn(
+              "h-full p-6 rounded-2xl",
+              "bg-card border border-border/50"
+            )}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">Recent Files</h2>
+                    <p className="text-sm text-muted-foreground">Your latest uploads</p>
+                  </div>
+                </div>
+                <Link to="/dashboard/files">
+                  <Button variant="ghost" size="sm" className="text-primary">
+                    View All
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+
+              <RecentFiles files={recentFiles} />
+            </div>
           </div>
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'files' | 'groups')} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="files" className="flex items-center gap-2">
-              <FolderOpen className="h-4 w-4" />
-              My Files
-            </TabsTrigger>
-            <TabsTrigger value="groups" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Groups
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="files" className="space-y-6">
-            {/* Actions & Breadcrumb */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              {/* Breadcrumb */}
-              <nav className="flex items-center gap-1 text-sm">
-                {folderPath.map((item, index) => (
-                  <div key={item.id || 'root'} className="flex items-center gap-1">
-                    {index > 0 && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
-                    <button
-                      onClick={() => handleBreadcrumbClick(index)}
-                      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
-                        index === folderPath.length - 1
-                          ? 'text-foreground font-medium'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                      }`}
-                    >
-                      {index === 0 && <Home className="w-4 h-4" />}
-                      {item.name}
-                    </button>
-                  </div>
-                ))}
-              </nav>
-
-              {/* Actions */}
-              <div className="flex items-center gap-2">
-                <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <FolderPlus className="w-4 h-4" />
-                      New Folder
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Create New Folder</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 pt-4">
-                      <Input
-                        placeholder="Folder name"
-                        value={newFolderName}
-                        onChange={(e) => setNewFolderName(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleCreateFolder()}
-                      />
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>
-                          Cancel
-                        </Button>
-                        <Button onClick={handleCreateFolder}>Create</Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="hero" size="sm">
-                      <Upload className="w-4 h-4" />
-                      Upload Files
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-lg">
-                    <DialogHeader>
-                      <DialogTitle>Upload Files</DialogTitle>
-                    </DialogHeader>
-                    <div className="pt-4">
-                      <FileUploadZone 
-                        folderId={currentFolderId || undefined} 
-                        onUploadComplete={() => {
-                          refetch();
-                        }}
-                      />
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
+        {/* Activity Section */}
+        <div className={cn(
+          "p-6 rounded-2xl",
+          "bg-card border border-border/50"
+        )}>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-primary" />
             </div>
-
-            {/* File List */}
-            <FileList
-              files={files}
-              folders={folders}
-              loading={filesLoading}
-              onFolderClick={handleFolderClick}
-              onDeleteFile={handleDeleteFile}
-              onDeleteFolder={handleDeleteFolder}
-              onDownloadFile={handleDownloadFile}
-              onShareFile={async (file) => await shareFileWithLink(file.id)}
-              onUnshareFile={async (file) => await unshareFileLink(file.id)}
-              getShareLink={getShareLink}
-            />
-          </TabsContent>
-
-          <TabsContent value="groups" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[500px]">
-              {/* Groups Sidebar */}
-              <div className="lg:col-span-1">
-                <div className="glass-card rounded-2xl p-4">
-                  <h3 className="font-semibold mb-4">Your Groups</h3>
-                  <GroupList
-                    groups={groups}
-                    loading={groupsLoading}
-                    selectedGroupId={selectedGroupId}
-                    onSelectGroup={setSelectedGroupId}
-                    onCreateGroup={createGroup}
-                    onJoinGroup={joinGroup}
-                    onDeleteGroup={handleDeleteGroup}
-                    onLeaveGroup={handleLeaveGroup}
-                  />
-                </div>
-              </div>
-
-              {/* Group Content */}
-              <div className="lg:col-span-2">
-                <div className="glass-card rounded-2xl h-full min-h-[500px]">
-                  {selectedGroupId && selectedGroup ? (
-                    <GroupView
-                      group={selectedGroup}
-                      members={members}
-                      messages={messages}
-                      files={groupFiles}
-                      loading={groupDetailsLoading}
-                      onSendMessage={sendMessage}
-                      onInviteByUsername={inviteByUsername}
-                      onRemoveMember={removeMember}
-                      onShareFile={shareFile}
-                      onUnshareFile={unshareFile}
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      <div className="text-center">
-                        <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                        <p className="text-lg font-medium">Select a group</p>
-                        <p className="text-sm">Choose a group from the sidebar to view its content</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Activity Overview</h2>
+              <p className="text-sm text-muted-foreground">Your file activity this week</p>
             </div>
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { label: "Files Uploaded", value: files.length, icon: Upload },
+              { label: "Files Shared", value: files.filter((f) => f.is_public).length, icon: Share2 },
+              { label: "Groups Joined", value: groups.length, icon: Users },
+              { label: "Storage Used", value: formatStorage(storageUsage.used), icon: HardDrive },
+            ].map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+                className="p-4 rounded-xl bg-muted/30 border border-border/30"
+              >
+                <stat.icon className="w-5 h-5 text-primary mb-2" />
+                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
   );
 };
 
