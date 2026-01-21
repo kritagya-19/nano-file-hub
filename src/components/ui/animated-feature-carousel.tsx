@@ -73,26 +73,26 @@ const steps: readonly Step[] = [
   {
     id: "1",
     name: "Step 1",
-    title: "Create Your Account",
-    description: "Sign up in seconds with your email. No credit card required to get started with secure file sharing.",
+    title: "Sign Up in 30 Seconds",
+    description: "Just your email — that's it. No credit card, no lengthy forms. You'll be uploading files before your coffee gets cold.",
   },
   {
     id: "2",
     name: "Step 2",
-    title: "Upload Your Files",
-    description: "Drag and drop any file type. Our resumable uploads ensure you never lose progress, even on large files.",
+    title: "Drag, Drop, Done",
+    description: "Upload any file up to 10GB. Lost connection? No worries — we'll pick up right where you left off. Every. Single. Time.",
   },
   {
     id: "3",
     name: "Step 3",
-    title: "Share & Collaborate",
-    description: "Create groups, invite team members, and share files instantly with secure, shareable links.",
+    title: "Share With Anyone",
+    description: "Send a secure link or invite your whole team. They don't even need an account to download. Collaboration without barriers.",
   },
   {
     id: "4",
     name: "Step 4",
-    title: "Access Anywhere",
-    description: "Download your files from any device, anytime. Your data is always secure and available when you need it.",
+    title: "Access From Anywhere",
+    description: "Your files follow you — phone, tablet, laptop, anywhere. Encrypted, backed up, and always ready when you are.",
   },
 ]
 

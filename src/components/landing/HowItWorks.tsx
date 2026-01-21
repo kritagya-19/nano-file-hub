@@ -36,7 +36,7 @@ const HowItWorks = () => {
               "mb-6 animate-appear"
             )}
           >
-            <span className="text-sm font-medium text-primary">How It Works</span>
+            <span className="text-sm font-medium text-primary">Simple as 1-2-3-4</span>
           </div>
           
           <h2
@@ -47,8 +47,8 @@ const HowItWorks = () => {
               "[animation-delay:100ms]"
             )}
           >
-            Get Started in{" "}
-            <span className="text-gradient">Four Simple Steps</span>
+            From Zero to Sharing in{" "}
+            <span className="text-gradient">Under 2 Minutes</span>
           </h2>
           
           <p
@@ -59,8 +59,8 @@ const HowItWorks = () => {
               "[animation-delay:200ms]"
             )}
           >
-            From signup to sharing, we've made the entire process seamless. 
-            Start sharing files in minutes, not hours.
+            No tutorials needed. No IT department required. 
+            If you can attach an email, you can use NanoFile.
           </p>
         </div>
 

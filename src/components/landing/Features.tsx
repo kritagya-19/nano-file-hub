@@ -18,33 +18,33 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: RefreshCw,
-    title: "Resumable Uploads",
-    description: "Pause and resume your uploads anytime. Never lose progress on large file transfers again.",
+    title: "Never Lose Progress Again",
+    description: "Internet dropped? Laptop died? No problem. Pick up exactly where you left off. Your upload waits for you, not the other way around.",
   },
   {
     icon: Cloud,
-    title: "Hybrid Storage",
-    description: "Best of both worlds with local server speed and cloud reliability for seamless access.",
+    title: "Your Files, Everywhere",
+    description: "Access from any device, anytime. Local speed when you're in the office, cloud reliability when you're on the move.",
   },
   {
     icon: Users,
-    title: "Group Collaboration",
-    description: "Create groups, share files, and chat in real-time with your team or classmates.",
+    title: "Collaborate Without Chaos",
+    description: "Share files with your team in one click. Built-in chat means no more hunting through email threads for that one attachment.",
   },
   {
     icon: Shield,
-    title: "Secure Authentication",
-    description: "JWT-based authentication ensures your files are protected with industry-standard security.",
+    title: "Bank-Level Security",
+    description: "256-bit encryption protects every file. Your confidential data stays confidential — we can't even see it.",
   },
   {
     icon: Zap,
-    title: "Fast Transfers",
-    description: "Optimized upload and download speeds to handle even the largest files efficiently.",
+    title: "Blazing Fast Transfers",
+    description: "Upload 10GB in minutes, not hours. Our optimized infrastructure means you spend less time waiting and more time doing.",
   },
   {
     icon: Download,
-    title: "Easy Downloads",
-    description: "Download files with a single click. Resume interrupted downloads seamlessly.",
+    title: "One-Click Downloads",
+    description: "No signups required for recipients. Share a link, they click, they download. It's that simple.",
   },
 ];
 
@@ -67,7 +67,7 @@ const Features = () => {
               "mb-6 animate-appear"
             )}
           >
-            <span className="text-sm font-medium text-primary">Features</span>
+            <span className="text-sm font-medium text-primary">Why Teams Choose Us</span>
           </div>
           
           <h2
@@ -78,8 +78,8 @@ const Features = () => {
               "[animation-delay:100ms]"
             )}
           >
-            Everything You Need for{" "}
-            <span className="text-gradient">File Sharing</span>
+            File Sharing That{" "}
+            <span className="text-gradient">Actually Works</span>
           </h2>
           
           <p
@@ -90,8 +90,8 @@ const Features = () => {
               "[animation-delay:200ms]"
             )}
           >
-            Built with modern technology to give you the best file transfer experience.
-            Simple, secure, and reliable.
+            We fixed everything that's broken about file sharing. 
+            No more failed uploads, lost files, or security nightmares.
           </p>
         </div>
 
@@ -108,7 +108,6 @@ const Features = () => {
                 "transition-all duration-300",
                 "hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5",
                 "animate-appear opacity-0",
-                // Make first two cards larger on desktop
                 index === 0 && "lg:col-span-2",
                 index === 3 && "lg:col-span-2"
               )}
@@ -149,7 +148,7 @@ const Features = () => {
           ))}
         </div>
 
-        {/* Bottom highlight */}
+        {/* Bottom highlight - Social proof */}
         <div
           className={cn(
             "mt-16 text-center",
@@ -172,7 +171,7 @@ const Features = () => {
             </div>
             <div className="h-4 w-px bg-border" />
             <p className="text-sm text-muted-foreground">
-              Trusted by <span className="font-semibold text-foreground">10,000+</span> users worldwide
+              Join <span className="font-semibold text-foreground">10,000+</span> happy teams
             </p>
           </div>
         </div>
