@@ -10,22 +10,22 @@ const Hero = () => {
     <section
       className={cn(
         "relative bg-background text-foreground",
-        "py-12 px-4 md:py-24 lg:py-32",
+        "py-16 px-4 sm:py-20 md:py-24 lg:py-32",
         "overflow-hidden"
       )}
     >
-      <div className="container mx-auto max-w-6xl relative z-10">
+      <div className="container mx-auto max-w-6xl relative z-10 px-4 sm:px-6">
         <div className="flex flex-col items-center text-center">
 
           {/* Heading - Pain point → Solution */}
           <h1
             className={cn(
               "text-gradient",
-              "text-4xl sm:text-5xl md:text-6xl lg:text-7xl",
+              "text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl",
               "font-extrabold tracking-tight",
-              "max-w-4xl mx-auto",
+              "max-w-4xl mx-auto px-2",
               "animate-appear",
-              "leading-[1.1]"
+              "leading-[1.15] sm:leading-[1.1]"
             )}
           >
             Stop Losing Files. Start Sharing Smarter.
@@ -35,11 +35,12 @@ const Hero = () => {
           <p
             className={cn(
               "text-muted-foreground",
-              "text-lg md:text-xl",
-              "max-w-2xl mx-auto",
-              "mt-6 mb-10",
+              "text-base sm:text-lg md:text-xl",
+              "max-w-2xl mx-auto px-2",
+              "mt-4 sm:mt-6 mb-8 sm:mb-10",
               "animate-appear opacity-0",
-              "[animation-delay:200ms]"
+              "[animation-delay:200ms]",
+              "leading-relaxed"
             )}
           >
             Upload files up to 10GB that <span className="text-foreground font-medium">never fail mid-transfer</span>. 
@@ -50,19 +51,19 @@ const Hero = () => {
           {/* CTAs - Clear action + lower commitment option */}
           <div
             className={cn(
-              "flex flex-col sm:flex-row gap-4",
+              "flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto",
               "animate-appear opacity-0",
               "[animation-delay:400ms]"
             )}
           >
-            <Link to="/auth">
-              <Button size="lg" className="gap-2 shadow-lg">
+            <Link to="/auth" className="w-full sm:w-auto">
+              <Button size="lg" className="gap-2 shadow-lg w-full sm:w-auto text-sm sm:text-base">
                 Start Free — No Card Required
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-            <a href="#how-it-works">
-              <Button size="lg" variant="outline" className="gap-2">
+            <a href="#how-it-works" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto text-sm sm:text-base">
                 <Play className="w-4 h-4" />
                 See How It Works
               </Button>
@@ -72,33 +73,34 @@ const Hero = () => {
           {/* Social proof micro-stats */}
           <div
             className={cn(
-              "flex flex-wrap items-center justify-center gap-8 mt-10",
+              "flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8 mt-8 sm:mt-10",
               "animate-appear opacity-0",
               "[animation-delay:500ms]"
             )}
           >
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">50M+</p>
-              <p className="text-xs text-muted-foreground">Files Transferred</p>
+            <div className="text-center px-2">
+              <p className="text-xl sm:text-2xl font-bold text-foreground">50M+</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Files Transferred</p>
             </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">99.9%</p>
-              <p className="text-xs text-muted-foreground">Uptime</p>
+            <div className="w-px h-6 sm:h-8 bg-border" />
+            <div className="text-center px-2">
+              <p className="text-xl sm:text-2xl font-bold text-foreground">99.9%</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Uptime</p>
             </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">4.9★</p>
-              <p className="text-xs text-muted-foreground">User Rating</p>
+            <div className="w-px h-6 sm:h-8 bg-border" />
+            <div className="text-center px-2">
+              <p className="text-xl sm:text-2xl font-bold text-foreground">4.9★</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">User Rating</p>
             </div>
           </div>
 
           {/* Mockup */}
           <div
             className={cn(
-              "relative w-full max-w-5xl mt-16",
+              "relative w-full max-w-5xl mt-10 sm:mt-12 md:mt-16",
               "animate-appear-zoom opacity-0",
-              "[animation-delay:700ms]"
+              "[animation-delay:700ms]",
+              "px-2 sm:px-0"
             )}
           >
             <Mockup type="responsive">
