@@ -60,15 +60,6 @@ const Features = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
-          <div
-            className={cn(
-              "inline-flex items-center gap-2 px-4 py-1.5 rounded-full",
-              "bg-primary/10 border border-primary/20",
-              "mb-6 animate-appear"
-            )}
-          >
-            <span className="text-sm font-medium text-primary">Why Teams Choose Us</span>
-          </div>
           
           <h2
             className={cn(

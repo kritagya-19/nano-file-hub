@@ -41,7 +41,6 @@ const HowItWorks = () => {
   return (
     <section id="how-it-works">
       <HowItWorksSection
-        badge="Quick Start Guide"
         title="From Zero to Sharing in"
         titleHighlight="Under 2 Minutes"
         subtitle="Three simple steps. No learning curve. If you can drag a file, you can use NanoFile."

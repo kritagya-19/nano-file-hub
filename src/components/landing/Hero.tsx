@@ -16,22 +16,6 @@ const Hero = () => {
     >
       <div className="container mx-auto max-w-6xl relative z-10">
         <div className="flex flex-col items-center text-center">
-          {/* Trust Badge */}
-          <div
-            className={cn(
-              "inline-flex items-center gap-2 px-4 py-2 rounded-full",
-              "bg-primary/10 border border-primary/20",
-              "mb-6 animate-appear"
-            )}
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            <span className="text-sm font-medium text-primary">
-              Trusted by 10,000+ teams worldwide
-            </span>
-          </div>
 
           {/* Heading - Pain point → Solution */}
           <h1
