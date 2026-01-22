@@ -33,19 +33,6 @@ const CTA = () => {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-8"
-          >
-            <Sparkles className="w-4 h-4 text-white" />
-            <span className="text-sm font-medium text-white">
-              Join 10,000+ happy teams
-            </span>
-          </motion.div>
 
           {/* Heading - Urgency + FOMO */}
           <motion.h2

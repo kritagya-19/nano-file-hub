@@ -56,14 +56,6 @@ const UseCases = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6"
-          >
-            <span className="text-sm font-medium text-primary">Built For You</span>
-          </motion.div>
           
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
