@@ -158,49 +158,26 @@ const Features = () => {
               Trusted by teams at
             </p>
             
-            {/* Logo Grid */}
-            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 mb-10">
-              {[
-                { name: "Google", letter: "G" },
-                { name: "Microsoft", letter: "M" },
-                { name: "Spotify", letter: "S" },
-                { name: "Airbnb", letter: "A" },
-                { name: "Stripe", letter: "S" },
-                { name: "Notion", letter: "N" },
-              ].map((company) => (
-                <div
-                  key={company.name}
-                  className="group flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity duration-300"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-                    <span className="text-sm font-bold text-foreground/70 group-hover:text-foreground transition-colors">
-                      {company.letter}
-                    </span>
-                  </div>
-                  <span className="text-base font-semibold text-foreground/60 group-hover:text-foreground transition-colors">
-                    {company.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Stats Row */}
-            <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16 pt-8 border-t border-border/50">
-              {[
-                { value: "10K+", label: "Teams" },
-                { value: "2M+", label: "Files shared" },
-                { value: "99.9%", label: "Uptime" },
-                { value: "4.9★", label: "Rating" },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <div className="text-2xl lg:text-3xl font-bold text-gradient">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
+            {/* Logo Grid - Text-based wordmarks */}
+            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 lg:gap-x-14">
+              <span className="text-xl lg:text-2xl font-bold tracking-tight text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default">
+                Google
+              </span>
+              <span className="text-xl lg:text-2xl font-semibold tracking-wide text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default">
+                Microsoft
+              </span>
+              <span className="text-xl lg:text-2xl font-bold tracking-tighter text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default italic">
+                Spotify
+              </span>
+              <span className="text-xl lg:text-2xl font-bold tracking-tight text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default">
+                Airbnb
+              </span>
+              <span className="text-xl lg:text-2xl font-bold tracking-wide text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default">
+                Stripe
+              </span>
+              <span className="text-xl lg:text-2xl font-medium tracking-tight text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default">
+                Notion
+              </span>
             </div>
           </div>
         </div>
