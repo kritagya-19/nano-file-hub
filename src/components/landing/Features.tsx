@@ -153,31 +153,130 @@ const Features = () => {
           ))}
         </div>
 
-        {/* Bottom highlight - Social proof */}
+        {/* Premium Social Proof Section */}
         <div
           className={cn(
-            "mt-16 text-center",
+            "mt-20 lg:mt-24",
             "animate-appear opacity-0",
             "[animation-delay:900ms]"
           )}
         >
-          <div className="inline-flex items-center gap-4 px-6 py-3 rounded-full bg-muted/50 border border-border/50">
-            <div className="flex -space-x-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-background flex items-center justify-center"
-                >
-                  <span className="text-xs font-medium text-primary">
-                    {String.fromCharCode(64 + i)}
+          <div className="relative max-w-4xl mx-auto">
+            {/* Glassmorphism card */}
+            <div className={cn(
+              "relative overflow-hidden rounded-3xl",
+              "bg-gradient-to-br from-card/80 via-card/60 to-card/80",
+              "backdrop-blur-xl",
+              "border border-border/50",
+              "p-8 lg:p-12",
+              "shadow-2xl shadow-primary/5"
+            )}>
+              {/* Decorative gradient orbs */}
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl" />
+              <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-accent/10 rounded-full blur-3xl" />
+              
+              <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+                {/* Left side - Stats and avatars */}
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  {/* Premium Avatar Stack */}
+                  <div className="relative">
+                    <div className="flex -space-x-3">
+                      {[
+                        { gradient: "from-indigo-500 to-purple-600", initials: "JD" },
+                        { gradient: "from-emerald-500 to-teal-600", initials: "SK" },
+                        { gradient: "from-orange-500 to-red-600", initials: "AL" },
+                        { gradient: "from-pink-500 to-rose-600", initials: "MR" },
+                        { gradient: "from-cyan-500 to-blue-600", initials: "TW" },
+                      ].map((avatar, i) => (
+                        <div
+                          key={i}
+                          className={cn(
+                            "w-11 h-11 rounded-full",
+                            "bg-gradient-to-br",
+                            avatar.gradient,
+                            "border-[3px] border-card",
+                            "flex items-center justify-center",
+                            "shadow-lg",
+                            "transition-transform duration-300 hover:scale-110 hover:z-10"
+                          )}
+                          style={{ animationDelay: `${i * 100}ms` }}
+                        >
+                          <span className="text-xs font-bold text-white">
+                            {avatar.initials}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Pulse ring */}
+                    <div className="absolute -right-1 -bottom-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-card animate-pulse" />
+                  </div>
+                  
+                  {/* Stats */}
+                  <div className="text-center sm:text-left">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl lg:text-5xl font-bold text-gradient">10,000+</span>
+                    </div>
+                    <p className="text-muted-foreground text-sm lg:text-base mt-1">
+                      teams trust NanoFile
+                    </p>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="hidden lg:block w-px h-20 bg-gradient-to-b from-transparent via-border to-transparent" />
+
+                {/* Right side - Rating and logos */}
+                <div className="flex flex-col items-center lg:items-end gap-4">
+                  {/* Star rating */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <svg
+                          key={star}
+                          className="w-5 h-5 text-amber-400 fill-amber-400"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">4.9/5</span>
+                    <span className="text-sm text-muted-foreground">(2,847 reviews)</span>
+                  </div>
+
+                  {/* Trusted by logos */}
+                  <div className="flex items-center gap-6 opacity-60">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Trusted by</span>
+                    <div className="flex items-center gap-4">
+                      {/* Generic company logo placeholders */}
+                      {["Stanford", "MIT", "Google", "Meta"].map((company) => (
+                        <span 
+                          key={company}
+                          className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {company}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom testimonial snippet */}
+              <div className="relative z-10 mt-8 pt-8 border-t border-border/50">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
+                  <svg className="w-8 h-8 text-primary/30 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                  </svg>
+                  <p className="text-muted-foreground italic">
+                    "NanoFile transformed how our team shares files. What used to take hours now takes seconds."
+                  </p>
+                  <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                    — Sarah K., Product Lead
                   </span>
                 </div>
-              ))}
+              </div>
             </div>
-            <div className="h-4 w-px bg-border" />
-            <p className="text-sm text-muted-foreground">
-              Join <span className="font-semibold text-foreground">10,000+</span> happy teams
-            </p>
           </div>
         </div>
       </div>
