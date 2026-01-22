@@ -10,7 +10,9 @@ const Hero = () => {
     <section
       className={cn(
         "relative bg-background text-foreground",
-        "py-16 px-4 sm:py-20 md:py-24 lg:py-32",
+        "pt-24 sm:pt-28 md:pt-32 lg:pt-40",
+        "pb-16 sm:pb-20 md:pb-24 lg:pb-32",
+        "px-4",
         "overflow-hidden"
       )}
     >
