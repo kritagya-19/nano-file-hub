@@ -320,6 +320,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_group: {
+        Args: { _description?: string; _name: string }
+        Returns: string
+      }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
