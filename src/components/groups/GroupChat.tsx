@@ -94,27 +94,36 @@ export const GroupChat = ({
   const uploadFile = async (file: File): Promise<{ url: string; name: string; type: string; size: number } | null> => {
     try {
       const fileExt = file.name.split(".").pop();
-      const fileName = `${groupId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const fileName = `group-chat/${groupId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from("user-files")
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw uploadError;
+      }
 
-      const { data: urlData } = supabase.storage
+      // Create a signed URL since the bucket is private
+      const { data: signedData, error: signedError } = await supabase.storage
         .from("user-files")
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year expiry
+
+      if (signedError) {
+        console.error("Signed URL error:", signedError);
+        throw signedError;
+      }
 
       return {
-        url: urlData.publicUrl,
+        url: signedData.signedUrl,
         name: file.name,
         type: file.type,
         size: file.size,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload error:", error);
-      toast({ variant: "destructive", title: "Upload failed", description: "Could not upload file" });
+      toast({ variant: "destructive", title: "Upload failed", description: error.message || "Could not upload file" });
       return null;
     }
   };
