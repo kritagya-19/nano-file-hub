@@ -42,7 +42,6 @@ import {
   Shield,
   UserPlus,
   UserMinus,
-  Send,
   Share2,
   Download,
   File,
@@ -50,10 +49,12 @@ import {
   Video,
   Music,
   Archive,
-  ChevronRight,
+  Hash,
+  Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { GroupChat } from "@/components/groups/GroupChat";
 
 interface UserFile {
   id: string;
@@ -506,8 +507,6 @@ const GroupDetailView = ({
   onCopyInviteCode,
 }: GroupDetailViewProps) => {
   const [activeTab, setActiveTab] = useState("chat");
-  const [newMessage, setNewMessage] = useState("");
-  const [sending, setSending] = useState(false);
   const [inviteUsername, setInviteUsername] = useState("");
   const [isInviting, setIsInviting] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
@@ -534,16 +533,6 @@ const GroupDetailView = ({
       console.error("Error loading files:", error);
     } finally {
       setLoadingFiles(false);
-    }
-  };
-
-  const handleSend = async () => {
-    if (!newMessage.trim() || sending) return;
-    setSending(true);
-    const success = await onSendMessage(newMessage);
-    setSending(false);
-    if (success) {
-      setNewMessage("");
     }
   };
 
@@ -615,126 +604,78 @@ const GroupDetailView = ({
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 lg:p-6 border-b border-border/50">
+      <div className="p-4 lg:p-6 border-b border-border/50 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 lg:gap-4 min-w-0">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <Users className="w-5 h-5 lg:w-6 lg:h-6 text-primary" />
+            <div className="relative">
+              <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+                <Hash className="w-6 h-6 lg:w-7 lg:h-7 text-primary-foreground" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-background" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-lg lg:text-xl font-bold text-foreground truncate">{group.name}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg lg:text-xl font-bold text-foreground truncate">{group.name}</h2>
+                <Badge variant="secondary" className="text-xs hidden sm:flex">
+                  {members.length} {members.length === 1 ? "member" : "members"}
+                </Badge>
+              </div>
               {group.description && (
-                <p className="text-sm text-muted-foreground truncate">{group.description}</p>
+                <p className="text-sm text-muted-foreground truncate max-w-md">{group.description}</p>
               )}
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={onCopyInviteCode} className="rounded-xl shrink-0">
-            <Copy className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Invite Code</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onCopyInviteCode} 
+              className="rounded-xl shrink-0 border-primary/20 hover:border-primary/40 hover:bg-primary/5"
+            >
+              <Copy className="w-4 h-4 mr-2 text-primary" />
+              <span className="hidden sm:inline">Invite</span>
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="px-4 lg:px-6 pt-4">
-          <TabsList className="w-full grid grid-cols-3 h-10 lg:h-12 p-1 rounded-xl bg-muted/50">
-            <TabsTrigger value="chat" className="rounded-lg data-[state=active]:shadow-sm text-xs lg:text-sm">
-              <MessageSquare className="w-4 h-4 mr-1 lg:mr-2" />
+          <TabsList className="w-full grid grid-cols-3 h-12 lg:h-14 p-1.5 rounded-2xl bg-muted/30 backdrop-blur-sm border border-border/50">
+            <TabsTrigger 
+              value="chat" 
+              className="rounded-xl data-[state=active]:shadow-lg data-[state=active]:bg-background data-[state=active]:border-border/50 text-xs lg:text-sm font-medium transition-all duration-200"
+            >
+              <MessageSquare className="w-4 h-4 mr-1.5 lg:mr-2" />
               <span className="hidden sm:inline">Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="members" className="rounded-lg data-[state=active]:shadow-sm text-xs lg:text-sm">
-              <Users className="w-4 h-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">Members</span> ({members.length})
+            <TabsTrigger 
+              value="members" 
+              className="rounded-xl data-[state=active]:shadow-lg data-[state=active]:bg-background data-[state=active]:border-border/50 text-xs lg:text-sm font-medium transition-all duration-200"
+            >
+              <Users className="w-4 h-4 mr-1.5 lg:mr-2" />
+              <span className="hidden sm:inline">Members</span>
+              <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-[10px]">{members.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="files" className="rounded-lg data-[state=active]:shadow-sm text-xs lg:text-sm">
-              <FileText className="w-4 h-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">Files</span> ({groupFiles.length})
+            <TabsTrigger 
+              value="files" 
+              className="rounded-xl data-[state=active]:shadow-lg data-[state=active]:bg-background data-[state=active]:border-border/50 text-xs lg:text-sm font-medium transition-all duration-200"
+            >
+              <FileText className="w-4 h-4 mr-1.5 lg:mr-2" />
+              <span className="hidden sm:inline">Files</span>
+              <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-[10px]">{groupFiles.length}</Badge>
             </TabsTrigger>
           </TabsList>
         </div>
 
         {/* Chat Tab */}
         <TabsContent value="chat" className="flex-1 flex flex-col m-0 mt-4 overflow-hidden">
-          <ScrollArea className="flex-1 px-4 lg:px-6">
-            {messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full py-12">
-                <div className="text-center">
-                  <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No messages yet</p>
-                  <p className="text-sm text-muted-foreground">Start the conversation!</p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3 lg:space-y-4 pb-4">
-                {messages.map((message) => {
-                  const isOwn = message.user_id === currentUserId;
-                  return (
-                    <motion.div
-                      key={message.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={cn("flex", isOwn ? "justify-end" : "justify-start")}
-                    >
-                      <div
-                        className={cn(
-                          "max-w-[85%] lg:max-w-[75%] rounded-2xl px-3 lg:px-4 py-2 lg:py-3",
-                          isOwn
-                            ? "bg-primary text-primary-foreground rounded-br-md"
-                            : "bg-muted rounded-bl-md"
-                        )}
-                      >
-                        {!isOwn && (
-                          <p className="text-xs font-medium mb-1 opacity-70">
-                            {message.profile?.full_name || message.profile?.username || "User"}
-                          </p>
-                        )}
-                        <p className="break-words text-sm lg:text-base">{message.content}</p>
-                        <p
-                          className={cn(
-                            "text-xs mt-1",
-                            isOwn ? "text-primary-foreground/70" : "text-muted-foreground"
-                          )}
-                        >
-                          {format(new Date(message.created_at), "HH:mm")}
-                        </p>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-          </ScrollArea>
-
-          {/* Message Input */}
-          <div className="p-3 lg:p-4 border-t border-border/50">
-            <div className="flex gap-2 lg:gap-3">
-              <Input
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                disabled={sending}
-                className="h-10 lg:h-12 rounded-xl"
-              />
-              <Button
-                onClick={handleSend}
-                disabled={sending || !newMessage.trim()}
-                className="h-10 lg:h-12 px-4 lg:px-6 rounded-xl"
-              >
-                {sending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
-          </div>
+          <GroupChat
+            messages={messages}
+            currentUserId={currentUserId}
+            onSendMessage={onSendMessage}
+          />
         </TabsContent>
 
         {/* Members Tab */}
@@ -961,7 +902,7 @@ const GroupDetailView = ({
                           {formatFileSize(file.size)}
                         </p>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      <Sparkles className="w-4 h-4 text-muted-foreground" />
                     </div>
                   );
                 })}
