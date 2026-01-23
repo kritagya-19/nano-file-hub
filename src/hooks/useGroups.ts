@@ -88,10 +88,7 @@ export const useGroups = () => {
   }, [user, toast]);
 
   const createGroup = async (name: string, description?: string): Promise<Group | null> => {
-    // Check if user is authenticated
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session || !user) {
+    if (!user) {
       toast({
         title: 'Error',
         description: 'You must be logged in to create a group',
@@ -100,33 +97,29 @@ export const useGroups = () => {
       return null;
     }
 
-    console.log('Creating group with user ID:', user.id);
-    console.log('Session user ID:', session.user.id);
-
     try {
-      const { data, error } = await supabase
-        .from('groups')
-        .insert({
-          name: name.trim(),
-          description: description?.trim() || null,
-          owner_id: session.user.id, // Use session user ID to ensure fresh auth
-        })
-        .select()
-        .single();
+      // Use the security definer function to bypass RLS issues
+      const { data: groupId, error } = await supabase.rpc('create_group', {
+        _name: name.trim(),
+        _description: description?.trim() || null,
+      });
 
       if (error) {
         console.error('Supabase error:', error);
         throw error;
       }
 
-      // Refresh groups list
+      // Refresh groups list to get the full group data
       await fetchGroups();
+      
+      // Find the newly created group
+      const newGroup = groups.find(g => g.id === groupId) || null;
       
       toast({
         title: 'Success',
         description: 'Group created successfully',
       });
-      return data;
+      return newGroup;
     } catch (error: any) {
       console.error('Error creating group:', error);
       toast({
