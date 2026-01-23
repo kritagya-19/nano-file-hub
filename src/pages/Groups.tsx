@@ -258,6 +258,7 @@ const Groups = () => {
               <GroupChat
                 messages={messages}
                 currentUserId={user.id}
+                groupId={group.id}
                 onSendMessage={sendMessage}
               />
             </>
