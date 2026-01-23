@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
-import { useGroups, useGroupDetails } from "@/hooks/useGroups";
+import { useGroups, useGroupDetails, Group } from "@/hooks/useGroups";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -41,7 +40,6 @@ import {
   Copy,
   Crown,
   Shield,
-  User,
   UserPlus,
   UserMinus,
   Send,
@@ -53,11 +51,18 @@ import {
   Music,
   Archive,
   ChevronRight,
-  Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useFiles } from "@/hooks/useFiles";
 import { format } from "date-fns";
+
+interface UserFile {
+  id: string;
+  name: string;
+  original_name: string;
+  size: number;
+  mime_type: string | null;
+  storage_path: string;
+}
 
 const Groups = () => {
   const { user, loading: authLoading } = useAuth();
@@ -102,7 +107,7 @@ const Groups = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Auto-select first group
+  // Auto-select first group when groups load
   useEffect(() => {
     if (groups.length > 0 && !selectedGroupId) {
       setSelectedGroupId(groups[0].id);
@@ -141,6 +146,20 @@ const Groups = () => {
     });
   };
 
+  const handleDeleteGroup = async (groupId: string) => {
+    const success = await deleteGroup(groupId);
+    if (success && selectedGroupId === groupId) {
+      setSelectedGroupId(groups.length > 1 ? groups.find(g => g.id !== groupId)?.id || null : null);
+    }
+  };
+
+  const handleLeaveGroup = async (groupId: string) => {
+    const success = await leaveGroup(groupId);
+    if (success && selectedGroupId === groupId) {
+      setSelectedGroupId(groups.length > 1 ? groups.find(g => g.id !== groupId)?.id || null : null);
+    }
+  };
+
   const filteredGroups = groups.filter((g) =>
     g.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -159,7 +178,7 @@ const Groups = () => {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-2rem)] flex flex-col lg:flex-row gap-6 p-6 lg:p-8">
+      <div className="h-[calc(100vh-2rem)] flex flex-col lg:flex-row gap-4 p-4 lg:gap-6 lg:p-6">
         {/* Sidebar - Group List */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -167,9 +186,9 @@ const Groups = () => {
           className="w-full lg:w-80 shrink-0 flex flex-col"
         >
           {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-foreground">Groups</h1>
-            <p className="text-muted-foreground mt-1">
+          <div className="mb-4 lg:mb-6">
+            <h1 className="text-xl lg:text-2xl font-bold text-foreground">Groups</h1>
+            <p className="text-muted-foreground text-sm mt-1">
               Collaborate with your teams
             </p>
           </div>
@@ -232,87 +251,16 @@ const Groups = () => {
             ) : (
               <div className="space-y-2">
                 {filteredGroups.map((g) => (
-                  <motion.div
+                  <GroupListItem
                     key={g.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={cn(
-                      "group p-4 rounded-xl cursor-pointer transition-all duration-200",
-                      "border border-transparent hover:border-border/50",
-                      selectedGroupId === g.id
-                        ? "bg-primary/10 border-primary/30"
-                        : "hover:bg-muted/50"
-                    )}
-                    onClick={() => setSelectedGroupId(g.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={cn(
-                            "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                            selectedGroupId === g.id
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-muted-foreground"
-                          )}
-                        >
-                          <Users className="w-5 h-5" />
-                        </div>
-                        <div className="min-w-0">
-                          <p
-                            className={cn(
-                              "font-medium truncate",
-                              selectedGroupId === g.id
-                                ? "text-primary"
-                                : "text-foreground"
-                            )}
-                          >
-                            {g.name}
-                          </p>
-                          {g.description && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {g.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleCopyInviteCode(g.invite_code)}
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copy invite code
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          {g.owner_id === user?.id ? (
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => deleteGroup(g.id)}
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete group
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem onClick={() => leaveGroup(g.id)}>
-                              <LogOut className="w-4 h-4 mr-2" />
-                              Leave group
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </motion.div>
+                    group={g}
+                    isSelected={selectedGroupId === g.id}
+                    isOwner={g.owner_id === user.id}
+                    onSelect={() => setSelectedGroupId(g.id)}
+                    onCopyCode={() => handleCopyInviteCode(g.invite_code)}
+                    onDelete={() => handleDeleteGroup(g.id)}
+                    onLeave={() => handleLeaveGroup(g.id)}
+                  />
                 ))}
               </div>
             )}
@@ -324,7 +272,7 @@ const Groups = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="flex-1 flex flex-col rounded-2xl bg-card border border-border/50 overflow-hidden"
+          className="flex-1 flex flex-col rounded-2xl bg-card border border-border/50 overflow-hidden min-h-[400px] lg:min-h-0"
         >
           {!selectedGroupId || !group ? (
             <div className="flex-1 flex items-center justify-center">
@@ -350,7 +298,7 @@ const Groups = () => {
               members={members}
               messages={messages}
               groupFiles={groupFiles}
-              currentUser={user}
+              currentUserId={user.id}
               onSendMessage={sendMessage}
               onInviteByUsername={inviteByUsername}
               onRemoveMember={removeMember}
@@ -436,13 +384,106 @@ const Groups = () => {
   );
 };
 
+// Group List Item Component
+interface GroupListItemProps {
+  group: Group;
+  isSelected: boolean;
+  isOwner: boolean;
+  onSelect: () => void;
+  onCopyCode: () => void;
+  onDelete: () => void;
+  onLeave: () => void;
+}
+
+const GroupListItem = ({
+  group,
+  isSelected,
+  isOwner,
+  onSelect,
+  onCopyCode,
+  onDelete,
+  onLeave,
+}: GroupListItemProps) => (
+  <motion.div
+    layout
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className={cn(
+      "group p-3 lg:p-4 rounded-xl cursor-pointer transition-all duration-200",
+      "border border-transparent hover:border-border/50",
+      isSelected
+        ? "bg-primary/10 border-primary/30"
+        : "hover:bg-muted/50"
+    )}
+    onClick={onSelect}
+  >
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3 min-w-0">
+        <div
+          className={cn(
+            "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+            isSelected
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground"
+          )}
+        >
+          <Users className="w-5 h-5" />
+        </div>
+        <div className="min-w-0">
+          <p className={cn("font-medium truncate", isSelected ? "text-primary" : "text-foreground")}>
+            {group.name}
+          </p>
+          {group.description && (
+            <p className="text-xs text-muted-foreground truncate">
+              {group.description}
+            </p>
+          )}
+        </div>
+      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreVertical className="w-4 h-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={onCopyCode}>
+            <Copy className="w-4 h-4 mr-2" />
+            Copy invite code
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {isOwner ? (
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete group
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={onLeave}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Leave group
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  </motion.div>
+);
+
 // Group Detail View Component
 interface GroupDetailViewProps {
-  group: any;
+  group: Group;
   members: any[];
   messages: any[];
   groupFiles: any[];
-  currentUser: any;
+  currentUserId: string;
   onSendMessage: (content: string) => Promise<boolean>;
   onInviteByUsername: (username: string) => Promise<boolean>;
   onRemoveMember: (memberId: string) => Promise<boolean>;
@@ -456,7 +497,7 @@ const GroupDetailView = ({
   members,
   messages,
   groupFiles,
-  currentUser,
+  currentUserId,
   onSendMessage,
   onInviteByUsername,
   onRemoveMember,
@@ -471,13 +512,30 @@ const GroupDetailView = ({
   const [isInviting, setIsInviting] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
-  const { files: userFiles } = useFiles();
+  const [userFiles, setUserFiles] = useState<UserFile[]>([]);
+  const [loadingFiles, setLoadingFiles] = useState(false);
   const { toast } = useToast();
 
   const isAdmin = members.some(
-    (m) =>
-      m.user_id === currentUser?.id && (m.role === "owner" || m.role === "admin")
+    (m) => m.user_id === currentUserId && (m.role === "owner" || m.role === "admin")
   );
+
+  const loadUserFiles = async () => {
+    setLoadingFiles(true);
+    try {
+      const { data, error } = await supabase
+        .from("files")
+        .select("id, name, original_name, size, mime_type, storage_path")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setUserFiles(data || []);
+    } catch (error) {
+      console.error("Error loading files:", error);
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return;
@@ -501,18 +559,9 @@ const GroupDetailView = ({
   };
 
   const handleShareFile = async (fileId: string) => {
-    await onShareFile(fileId);
-    setIsShareOpen(false);
-  };
-
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case "owner":
-        return <Crown className="w-4 h-4 text-yellow-500" />;
-      case "admin":
-        return <Shield className="w-4 h-4 text-blue-500" />;
-      default:
-        return <User className="w-4 h-4 text-muted-foreground" />;
+    const success = await onShareFile(fileId);
+    if (success) {
+      setIsShareOpen(false);
     }
   };
 
@@ -535,13 +584,22 @@ const GroupDetailView = ({
 
   const downloadFile = async (storagePath: string, fileName: string) => {
     try {
-      const { data } = await supabase.storage
+      const { data, error } = await supabase.storage
         .from("user-files")
         .createSignedUrl(storagePath, 3600);
+        
+      if (error) throw error;
+      
       if (data?.signedUrl) {
-        window.open(data.signedUrl, "_blank");
+        const link = document.createElement("a");
+        link.href = data.signedUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
     } catch (error) {
+      console.error("Download error:", error);
       toast({
         variant: "destructive",
         title: "Download failed",
@@ -551,68 +609,66 @@ const GroupDetailView = ({
   };
 
   // Filter files not already shared
-  const sharedFileIds = groupFiles.map((gf: any) => gf.file_id);
+  const sharedFileIds = groupFiles.map((gf) => gf.file_id);
   const availableFiles = userFiles.filter((f) => !sharedFileIds.includes(f.id));
 
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
-      <div className="p-6 border-b border-border/50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Users className="w-6 h-6 text-primary" />
+      <div className="p-4 lg:p-6 border-b border-border/50">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 lg:gap-4 min-w-0">
+            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Users className="w-5 h-5 lg:w-6 lg:h-6 text-primary" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-foreground">{group.name}</h2>
+            <div className="min-w-0">
+              <h2 className="text-lg lg:text-xl font-bold text-foreground truncate">{group.name}</h2>
               {group.description && (
-                <p className="text-sm text-muted-foreground">{group.description}</p>
+                <p className="text-sm text-muted-foreground truncate">{group.description}</p>
               )}
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={onCopyInviteCode} className="rounded-xl">
+          <Button variant="outline" size="sm" onClick={onCopyInviteCode} className="rounded-xl shrink-0">
             <Copy className="w-4 h-4 mr-2" />
-            Invite Code
+            <span className="hidden sm:inline">Invite Code</span>
           </Button>
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <div className="px-6 pt-4">
-          <TabsList className="w-full grid grid-cols-3 h-12 p-1 rounded-xl bg-muted/50">
-            <TabsTrigger value="chat" className="rounded-lg data-[state=active]:shadow-sm">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Chat
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+        <div className="px-4 lg:px-6 pt-4">
+          <TabsList className="w-full grid grid-cols-3 h-10 lg:h-12 p-1 rounded-xl bg-muted/50">
+            <TabsTrigger value="chat" className="rounded-lg data-[state=active]:shadow-sm text-xs lg:text-sm">
+              <MessageSquare className="w-4 h-4 mr-1 lg:mr-2" />
+              <span className="hidden sm:inline">Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="members" className="rounded-lg data-[state=active]:shadow-sm">
-              <Users className="w-4 h-4 mr-2" />
-              Members ({members.length})
+            <TabsTrigger value="members" className="rounded-lg data-[state=active]:shadow-sm text-xs lg:text-sm">
+              <Users className="w-4 h-4 mr-1 lg:mr-2" />
+              <span className="hidden sm:inline">Members</span> ({members.length})
             </TabsTrigger>
-            <TabsTrigger value="files" className="rounded-lg data-[state=active]:shadow-sm">
-              <FileText className="w-4 h-4 mr-2" />
-              Files ({groupFiles.length})
+            <TabsTrigger value="files" className="rounded-lg data-[state=active]:shadow-sm text-xs lg:text-sm">
+              <FileText className="w-4 h-4 mr-1 lg:mr-2" />
+              <span className="hidden sm:inline">Files</span> ({groupFiles.length})
             </TabsTrigger>
           </TabsList>
         </div>
 
         {/* Chat Tab */}
-        <TabsContent value="chat" className="flex-1 flex flex-col m-0 mt-4">
-          <ScrollArea className="flex-1 px-6">
+        <TabsContent value="chat" className="flex-1 flex flex-col m-0 mt-4 overflow-hidden">
+          <ScrollArea className="flex-1 px-4 lg:px-6">
             {messages.length === 0 ? (
               <div className="flex items-center justify-center h-full py-12">
                 <div className="text-center">
                   <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">No messages yet</p>
-                  <p className="text-sm text-muted-foreground">
-                    Start the conversation!
-                  </p>
+                  <p className="text-sm text-muted-foreground">Start the conversation!</p>
                 </div>
               </div>
             ) : (
-              <div className="space-y-4 pb-4">
+              <div className="space-y-3 lg:space-y-4 pb-4">
                 {messages.map((message) => {
-                  const isOwn = message.user_id === currentUser?.id;
+                  const isOwn = message.user_id === currentUserId;
                   return (
                     <motion.div
                       key={message.id}
@@ -622,7 +678,7 @@ const GroupDetailView = ({
                     >
                       <div
                         className={cn(
-                          "max-w-[75%] rounded-2xl px-4 py-3",
+                          "max-w-[85%] lg:max-w-[75%] rounded-2xl px-3 lg:px-4 py-2 lg:py-3",
                           isOwn
                             ? "bg-primary text-primary-foreground rounded-br-md"
                             : "bg-muted rounded-bl-md"
@@ -630,12 +686,10 @@ const GroupDetailView = ({
                       >
                         {!isOwn && (
                           <p className="text-xs font-medium mb-1 opacity-70">
-                            {message.profile?.full_name ||
-                              message.profile?.username ||
-                              "Unknown User"}
+                            {message.profile?.full_name || message.profile?.username || "User"}
                           </p>
                         )}
-                        <p className="break-words">{message.content}</p>
+                        <p className="break-words text-sm lg:text-base">{message.content}</p>
                         <p
                           className={cn(
                             "text-xs mt-1",
@@ -653,8 +707,8 @@ const GroupDetailView = ({
           </ScrollArea>
 
           {/* Message Input */}
-          <div className="p-4 border-t border-border/50">
-            <div className="flex gap-3">
+          <div className="p-3 lg:p-4 border-t border-border/50">
+            <div className="flex gap-2 lg:gap-3">
               <Input
                 placeholder="Type a message..."
                 value={newMessage}
@@ -666,12 +720,12 @@ const GroupDetailView = ({
                   }
                 }}
                 disabled={sending}
-                className="h-12 rounded-xl"
+                className="h-10 lg:h-12 rounded-xl"
               />
               <Button
                 onClick={handleSend}
                 disabled={sending || !newMessage.trim()}
-                className="h-12 px-6 rounded-xl"
+                className="h-10 lg:h-12 px-4 lg:px-6 rounded-xl"
               >
                 {sending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -685,8 +739,8 @@ const GroupDetailView = ({
 
         {/* Members Tab */}
         <TabsContent value="members" className="flex-1 m-0 mt-4 overflow-hidden">
-          <ScrollArea className="h-full px-6">
-            <div className="space-y-4 pb-4">
+          <ScrollArea className="h-full px-4 lg:px-6">
+            <div className="space-y-3 lg:space-y-4 pb-4">
               {/* Invite Button */}
               {isAdmin && (
                 <Button
@@ -705,24 +759,18 @@ const GroupDetailView = ({
                   key={member.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/30"
+                  className="flex items-center justify-between p-3 lg:p-4 rounded-xl bg-muted/30 border border-border/30"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-semibold">
-                      {(
-                        member.profile?.full_name?.[0] ||
-                        member.profile?.username?.[0] ||
-                        "U"
-                      ).toUpperCase()}
+                    <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-semibold text-sm lg:text-base">
+                      {(member.profile?.full_name?.[0] || member.profile?.username?.[0] || "U").toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">
-                        {member.profile?.full_name ||
-                          member.profile?.username ||
-                          "Unknown User"}
+                      <p className="font-medium text-foreground text-sm lg:text-base">
+                        {member.profile?.full_name || member.profile?.username || "User"}
                       </p>
                       {member.profile?.username && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs lg:text-sm text-muted-foreground">
                           @{member.profile.username}
                         </p>
                       )}
@@ -730,29 +778,27 @@ const GroupDetailView = ({
                   </div>
                   <div className="flex items-center gap-2">
                     {member.role === "owner" && (
-                      <Badge variant="default" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+                      <Badge variant="default" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 text-xs">
                         <Crown className="w-3 h-3 mr-1" />
                         Owner
                       </Badge>
                     )}
                     {member.role === "admin" && (
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="text-xs">
                         <Shield className="w-3 h-3 mr-1" />
                         Admin
                       </Badge>
                     )}
-                    {isAdmin &&
-                      member.role !== "owner" &&
-                      member.user_id !== currentUser?.id && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => onRemoveMember(member.id)}
-                        >
-                          <UserMinus className="w-4 h-4" />
-                        </Button>
-                      )}
+                    {isAdmin && member.role !== "owner" && member.user_id !== currentUserId && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        onClick={() => onRemoveMember(member.id)}
+                      >
+                        <UserMinus className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -762,11 +808,14 @@ const GroupDetailView = ({
 
         {/* Files Tab */}
         <TabsContent value="files" className="flex-1 m-0 mt-4 overflow-hidden">
-          <ScrollArea className="h-full px-6">
-            <div className="space-y-4 pb-4">
+          <ScrollArea className="h-full px-4 lg:px-6">
+            <div className="space-y-3 lg:space-y-4 pb-4">
               {/* Share Button */}
               <Button
-                onClick={() => setIsShareOpen(true)}
+                onClick={() => {
+                  setIsShareOpen(true);
+                  loadUserFiles();
+                }}
                 className="w-full rounded-xl"
                 variant="outline"
               >
@@ -781,24 +830,24 @@ const GroupDetailView = ({
                   <p className="text-muted-foreground">No files shared yet</p>
                 </div>
               ) : (
-                groupFiles.map((groupFile: any) => {
+                groupFiles.map((groupFile) => {
                   const FileIcon = getFileIcon(groupFile.file?.mime_type || null);
                   return (
                     <motion.div
                       key={groupFile.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/30"
+                      className="flex items-center justify-between p-3 lg:p-4 rounded-xl bg-muted/30 border border-border/30"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                          <FileIcon className="w-5 h-5 text-primary" />
+                        <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <FileIcon className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium text-foreground truncate">
+                          <p className="font-medium text-foreground truncate text-sm lg:text-base">
                             {groupFile.file?.original_name || "Unknown file"}
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs lg:text-sm text-muted-foreground">
                             {formatFileSize(groupFile.file?.size || 0)} •{" "}
                             {format(new Date(groupFile.shared_at), "MMM d, yyyy")}
                           </p>
@@ -811,16 +860,13 @@ const GroupDetailView = ({
                             size="icon"
                             className="h-8 w-8"
                             onClick={() =>
-                              downloadFile(
-                                groupFile.file!.storage_path,
-                                groupFile.file!.original_name
-                              )
+                              downloadFile(groupFile.file!.storage_path, groupFile.file!.original_name)
                             }
                           >
                             <Download className="w-4 h-4" />
                           </Button>
                         )}
-                        {groupFile.shared_by === currentUser?.id && (
+                        {(groupFile.shared_by === currentUserId || isAdmin) && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -882,7 +928,11 @@ const GroupDetailView = ({
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[400px] mt-4">
-            {availableFiles.length === 0 ? (
+            {loadingFiles ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : availableFiles.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">No files available to share</p>
