@@ -30,6 +30,10 @@ export interface GroupMessage {
   user_id: string;
   content: string;
   created_at: string;
+  file_url?: string | null;
+  file_name?: string | null;
+  file_type?: string | null;
+  file_size?: number | null;
   profile?: {
     full_name: string | null;
     username: string | null;
@@ -386,16 +390,28 @@ export const useGroupDetails = (groupId: string | null) => {
     }
   }, [groupId, user, toast]);
 
-  // Send a message
-  const sendMessage = async (content: string): Promise<boolean> => {
-    if (!groupId || !user || !content.trim()) return false;
+  // Send a message with optional file attachment
+  const sendMessage = async (
+    content: string,
+    fileData?: { url: string; name: string; type: string; size: number }
+  ): Promise<boolean> => {
+    if (!groupId || !user || (!content.trim() && !fileData)) return false;
 
     try {
-      const { error } = await supabase.from('group_messages').insert({
+      const messageData: any = {
         group_id: groupId,
         user_id: user.id,
-        content: content.trim(),
-      });
+        content: content.trim() || (fileData ? `Shared a file` : ''),
+      };
+
+      if (fileData) {
+        messageData.file_url = fileData.url;
+        messageData.file_name = fileData.name;
+        messageData.file_type = fileData.type;
+        messageData.file_size = fileData.size;
+      }
+
+      const { error } = await supabase.from('group_messages').insert(messageData);
 
       if (error) throw error;
       
@@ -404,8 +420,12 @@ export const useGroupDetails = (groupId: string | null) => {
         id: crypto.randomUUID(),
         group_id: groupId,
         user_id: user.id,
-        content: content.trim(),
+        content: messageData.content,
         created_at: new Date().toISOString(),
+        file_url: fileData?.url || null,
+        file_name: fileData?.name || null,
+        file_type: fileData?.type || null,
+        file_size: fileData?.size || null,
         profile: {
           full_name: null,
           username: null,
