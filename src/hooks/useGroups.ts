@@ -88,7 +88,10 @@ export const useGroups = () => {
   }, [user, toast]);
 
   const createGroup = async (name: string, description?: string): Promise<Group | null> => {
-    if (!user) {
+    // Check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session || !user) {
       toast({
         title: 'Error',
         description: 'You must be logged in to create a group',
@@ -97,18 +100,24 @@ export const useGroups = () => {
       return null;
     }
 
+    console.log('Creating group with user ID:', user.id);
+    console.log('Session user ID:', session.user.id);
+
     try {
       const { data, error } = await supabase
         .from('groups')
         .insert({
           name: name.trim(),
           description: description?.trim() || null,
-          owner_id: user.id,
+          owner_id: session.user.id, // Use session user ID to ensure fresh auth
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       // Refresh groups list
       await fetchGroups();
