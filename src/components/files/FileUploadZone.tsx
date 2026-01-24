@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { Upload, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertCircle, Loader2, Pause, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFileUpload, UploadProgress } from '@/hooks/useFileUpload';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ interface FileUploadZoneProps {
 const FileUploadZone = ({ folderId, onUploadComplete }: FileUploadZoneProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { uploads, uploadFiles, removeUpload, clearCompleted, formatFileSize } = useFileUpload();
+  const { uploads, uploadFiles, pauseUpload, resumeUpload, removeUpload, clearCompleted, formatFileSize } = useFileUpload();
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -51,6 +51,8 @@ const FileUploadZone = ({ folderId, onUploadComplete }: FileUploadZoneProps) => 
     switch (status) {
       case 'uploading':
         return <Loader2 className="w-4 h-4 animate-spin text-primary" />;
+      case 'paused':
+        return <Pause className="w-4 h-4 text-amber-500" />;
       case 'completed':
         return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'failed':
@@ -141,6 +143,7 @@ const FileUploadZone = ({ folderId, onUploadComplete }: FileUploadZoneProps) => 
                         'h-full rounded-full transition-all duration-300',
                         upload.status === 'completed' ? 'bg-green-500' :
                         upload.status === 'failed' ? 'bg-destructive' :
+                        upload.status === 'paused' ? 'bg-amber-500' :
                         'gradient-bg'
                       )}
                       style={{ width: `${upload.progress}%` }}
@@ -149,13 +152,48 @@ const FileUploadZone = ({ folderId, onUploadComplete }: FileUploadZoneProps) => 
                   {upload.error && (
                     <p className="text-xs text-destructive mt-1">{upload.error}</p>
                   )}
+                  {upload.status === 'paused' && (
+                    <p className="text-xs text-amber-600 mt-1">Paused - click resume to continue</p>
+                  )}
                 </div>
-                <button
-                  onClick={() => removeUpload(upload.id)}
-                  className="p-1 hover:bg-muted rounded-lg transition-colors"
-                >
-                  <X className="w-4 h-4 text-muted-foreground" />
-                </button>
+                
+                {/* Pause/Resume/Remove buttons */}
+                <div className="flex items-center gap-1">
+                  {upload.status === 'uploading' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        pauseUpload(upload.id);
+                      }}
+                      className="p-1.5 hover:bg-muted rounded-lg transition-colors"
+                      title="Pause upload"
+                    >
+                      <Pause className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                    </button>
+                  )}
+                  {upload.status === 'paused' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        resumeUpload(upload.id);
+                      }}
+                      className="p-1.5 hover:bg-muted rounded-lg transition-colors"
+                      title="Resume upload"
+                    >
+                      <Play className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeUpload(upload.id);
+                    }}
+                    className="p-1.5 hover:bg-muted rounded-lg transition-colors"
+                    title="Cancel upload"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
