@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Sparkles, Check, Shield } from "lucide-react";
+import { ArrowRight, Check, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 
 const CTA = () => {
   const guarantees = [
-    "Free forever plan available",
-    "No credit card to start",
-    "Cancel anytime",
+    "Free forever plan",
+    "No credit card needed",
+    "Ready in 30 seconds",
   ];
 
   return (
@@ -34,7 +34,7 @@ const CTA = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-4xl mx-auto text-center px-2">
 
-          {/* Heading - Urgency + FOMO */}
+          {/* Heading - Simple & Friendly */}
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -47,16 +47,16 @@ const CTA = () => {
               "mb-4 sm:mb-6"
             )}
           >
-            Your Team Is Waiting.{" "}
+            Ready to Start{" "}
             <span className="relative inline-block">
-              <span className="relative z-10">Your Files Aren't.</span>
+              <span className="relative z-10">Sharing?</span>
               <svg className="absolute -bottom-1 sm:-bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
                 <path d="M2 10C50 4 150 4 198 10" stroke="white" strokeWidth="3" strokeLinecap="round" className="opacity-60"/>
               </svg>
             </span>
           </motion.h2>
 
-          {/* Description - Remove friction */}
+          {/* Description - Clear benefit */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -64,11 +64,11 @@ const CTA = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed"
           >
-            Stop wrestling with failed uploads and scattered files. 
-            Start your free account now and share your first file in under 60 seconds.
+            Join thousands of students and teams who share files the easy way. 
+            Create your free account and share your first file in under a minute.
           </motion.p>
 
-          {/* CTA Buttons */}
+          {/* CTA Button */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -78,7 +78,7 @@ const CTA = () => {
           >
             <Link to="/auth" className="w-full sm:w-auto">
               <button className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary bg-white rounded-xl shadow-lg shadow-black/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-                Get Started Free
+                Create Free Account
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </button>
             </Link>
@@ -115,7 +115,7 @@ const CTA = () => {
           >
             <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-white flex-shrink-0" />
             <span className="text-xs sm:text-sm text-white/90 text-center sm:text-left">
-              256-bit SSL encryption • SOC 2 Type II compliant • GDPR ready
+              Your files are encrypted and secure
             </span>
           </motion.div>
         </div>

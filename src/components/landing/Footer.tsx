@@ -25,21 +25,21 @@ const Footer = () => {
               </span>
             </a>
             <p className="text-background/60 max-w-md leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
-              The file sharing platform that doesn't make you want to throw your computer out the window. 
-              Fast, secure, and actually reliable.
+              The simple way to share big files. 
+              No complicated setup, no failed uploads, just easy file sharing that works.
             </p>
             <Link 
               to="/auth"
               className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors text-sm sm:text-base"
             >
-              Start sharing for free
+              Get started free
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
           {/* Navigation */}
           <div>
-            <h4 className="font-semibold mb-4 sm:mb-6 text-sm sm:text-base">Product</h4>
+            <h4 className="font-semibold mb-4 sm:mb-6 text-sm sm:text-base">Learn More</h4>
             <ul className="space-y-3 sm:space-y-4">
               {footerLinks.map((link) => (
                 <li key={link.name}>
@@ -85,7 +85,7 @@ const Footer = () => {
               © {currentYear} NanoFile. All rights reserved.
             </p>
             <p className="text-xs sm:text-sm text-background/50 text-center sm:text-left">
-              Made for teams who value their time ⚡
+              Simple file sharing for everyone ✨
             </p>
           </div>
         </div>

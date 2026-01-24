@@ -5,42 +5,42 @@ import { motion } from "framer-motion";
 const useCases = [
   {
     icon: GraduationCap,
-    title: "Students & Educators",
-    subtitle: "Ace your group projects",
-    description: "No more \"I didn't get the file\" excuses. Share lecture notes, research papers, and project files that everyone can actually access — even at 2 AM before the deadline.",
+    title: "Students & Study Groups",
+    subtitle: "Perfect for group projects",
+    description: "Share class notes, presentations, and project files with your classmates. Everyone gets the files they need, even at midnight before the deadline.",
     features: [
       "Share files too big for email",
-      "Group folders for every class",
-      "Works on any device"
+      "Create groups for each class",
+      "Works on phones & laptops"
     ],
     stat: "50K+",
-    statLabel: "students use NanoFile"
+    statLabel: "students love NanoFile"
   },
   {
     icon: Briefcase,
     title: "Remote Teams",
-    subtitle: "Stay in sync, anywhere",
-    description: "Scattered across time zones? Your files aren't. Real-time collaboration with built-in chat means fewer meetings and more getting things done.",
+    subtitle: "Work together from anywhere",
+    description: "Working from home? Share files with your team no matter where everyone is. Built-in chat keeps everyone on the same page.",
     features: [
-      "Real-time file updates",
-      "Team chat built in",
-      "No version confusion"
+      "Send large work files",
+      "Chat with your team",
+      "No more email attachments"
     ],
-    stat: "3x",
-    statLabel: "faster project delivery"
+    stat: "2x",
+    statLabel: "faster than email"
   },
   {
     icon: Building2,
-    title: "Growing Businesses",
-    subtitle: "Enterprise security, startup speed",
-    description: "Your client files deserve bank-level protection without the bank-level complexity. SOC 2 compliant security that your IT team will actually approve.",
+    title: "Small Businesses",
+    subtitle: "Simple & secure",
+    description: "Share files with clients and coworkers safely. Your business files are protected and organized in one place.",
     features: [
-      "256-bit encryption",
-      "Access controls",
-      "Audit logs"
+      "Files stay private",
+      "Control who sees what",
+      "Easy to use for everyone"
     ],
     stat: "99.9%",
-    statLabel: "uptime guarantee"
+    statLabel: "always available"
   },
 ];
 
@@ -64,9 +64,9 @@ const UseCases = () => {
             transition={{ delay: 0.1 }}
             className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 sm:mb-6"
           >
-            Whether You're a Team of{" "}
+            Built for People{" "}
             <span className="relative inline-block">
-              <span className="text-gradient">One or One Thousand</span>
+              <span className="text-gradient">Like You</span>
               <svg className="absolute -bottom-1 sm:-bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
                 <path d="M2 10C50 4 150 4 198 10" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" className="opacity-60"/>
               </svg>
@@ -80,7 +80,7 @@ const UseCases = () => {
             transition={{ delay: 0.2 }}
             className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed"
           >
-            NanoFile scales with you. Start free, grow without limits.
+            Whether you're a student, freelancer, or running a business — NanoFile makes file sharing simple.
           </motion.p>
         </div>
 
