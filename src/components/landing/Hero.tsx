@@ -109,7 +109,7 @@ const Hero = () => {
             <Mockup type="responsive">
               <img 
                 src={dashboardPreview} 
-                alt="NanoFile Dashboard Preview" 
+                alt="NanoFile Dashboard - File sharing made simple" 
                 className="w-full h-auto rounded-md"
               />
             </Mockup>
