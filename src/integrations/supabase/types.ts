@@ -183,6 +183,8 @@ export type Database = {
           file_url: string | null
           group_id: string
           id: string
+          is_starred: boolean
+          starred_by: string[] | null
           user_id: string
         }
         Insert: {
@@ -194,6 +196,8 @@ export type Database = {
           file_url?: string | null
           group_id: string
           id?: string
+          is_starred?: boolean
+          starred_by?: string[] | null
           user_id: string
         }
         Update: {
@@ -205,6 +209,8 @@ export type Database = {
           file_url?: string | null
           group_id?: string
           id?: string
+          is_starred?: boolean
+          starred_by?: string[] | null
           user_id?: string
         }
         Relationships: [

@@ -14,13 +14,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
@@ -29,14 +22,11 @@ import {
   Users,
   LogIn,
   Search,
-  MoreVertical,
-  Trash2,
-  LogOut,
-  Copy,
-  Hash,
-  Info,
+  MessageCircle,
+  Settings,
 } from "lucide-react";
-import { GroupChat } from "@/components/groups/GroupChat";
+import { GroupChatView } from "@/components/groups/GroupChatView";
+import { GroupListItem } from "@/components/groups/GroupListItem";
 import { GroupDetailDialog } from "@/components/groups/GroupDetailDialog";
 
 const Groups = () => {
@@ -63,6 +53,7 @@ const Groups = () => {
   const [inviteCode, setInviteCode] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  const [showMobileChat, setShowMobileChat] = useState(false);
 
   const {
     group,
@@ -75,8 +66,13 @@ const Groups = () => {
     removeMember,
     shareFile,
     unshareFile,
+    starMessage,
+    unstarMessage,
+    deleteMessage,
+    clearChat,
   } = useGroupDetails(selectedGroupId);
 
+  const isOwner = group?.owner_id === user?.id;
   const isAdmin = members.some(
     (m) => m.user_id === user?.id && (m.role === "owner" || m.role === "admin")
   );
@@ -133,12 +129,24 @@ const Groups = () => {
     const success = await leaveGroup(groupId);
     if (success && selectedGroupId === groupId) {
       setSelectedGroupId(groups.length > 1 ? groups.find(g => g.id !== groupId)?.id || null : null);
+      setShowMobileChat(false);
     }
+  };
+
+  const handleSelectGroup = (groupId: string) => {
+    setSelectedGroupId(groupId);
+    setShowMobileChat(true);
   };
 
   const filteredGroups = groups.filter((g) =>
     g.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Get last message for each group (simplified - just show description for now)
+  const getLastMessage = (groupId: string) => {
+    // In a real app, you'd track this per-group
+    return undefined;
+  };
 
   if (authLoading) {
     return (
@@ -152,61 +160,99 @@ const Groups = () => {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-2rem)] flex flex-col lg:flex-row gap-3 p-3 sm:gap-4 sm:p-4 lg:gap-6 lg:p-6">
-        {/* Sidebar - Group List */}
-        <div className="w-full lg:w-72 xl:w-80 shrink-0 flex flex-col">
-          <div className="mb-4">
-            <h1 className="text-lg sm:text-xl font-bold text-foreground">Groups</h1>
-            <p className="text-muted-foreground text-sm">Chat with your teams</p>
+      <div className="h-[calc(100vh-2rem)] flex overflow-hidden">
+        {/* Sidebar - Group List (WhatsApp style) */}
+        <div className={cn(
+          "w-full md:w-[350px] lg:w-[400px] shrink-0 flex flex-col border-r border-border bg-card",
+          showMobileChat && selectedGroupId ? "hidden md:flex" : "flex"
+        )}>
+          {/* Header */}
+          <div className="h-14 sm:h-16 px-4 flex items-center justify-between border-b border-border bg-card">
+            <h1 className="text-xl font-bold text-foreground">Chats</h1>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" onClick={() => setIsCreateOpen(true)}>
+                <Plus className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
 
-          <div className="flex gap-2 mb-3">
-            <Button onClick={() => setIsCreateOpen(true)} size="sm" className="flex-1">
-              <Plus className="w-4 h-4 mr-1.5" />
-              Create
+          {/* Search */}
+          <div className="p-2 border-b border-border">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search or start new chat"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 text-sm bg-muted/50 border-0 focus-visible:ring-1"
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="px-3 py-2 flex gap-2 border-b border-border">
+            <Button 
+              onClick={() => setIsCreateOpen(true)} 
+              size="sm" 
+              variant="outline"
+              className="flex-1 h-8 text-xs"
+            >
+              <Plus className="w-3.5 h-3.5 mr-1.5" />
+              New Group
             </Button>
-            <Button variant="outline" onClick={() => setIsJoinOpen(true)} size="sm" className="flex-1">
-              <LogIn className="w-4 h-4 mr-1.5" />
-              Join
+            <Button 
+              variant="outline" 
+              onClick={() => setIsJoinOpen(true)} 
+              size="sm" 
+              className="flex-1 h-8 text-xs"
+            >
+              <LogIn className="w-3.5 h-3.5 mr-1.5" />
+              Join Group
             </Button>
           </div>
 
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search groups..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-sm"
-            />
-          </div>
-
-          <ScrollArea className="flex-1 -mx-1 px-1">
+          {/* Groups List */}
+          <ScrollArea className="flex-1">
             {groupsLoading ? (
-              <div className="space-y-2">
+              <div className="space-y-2 p-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-14 bg-muted/50 animate-pulse rounded-lg" />
+                  <div key={i} className="h-16 bg-muted/50 animate-pulse rounded-lg" />
                 ))}
               </div>
             ) : filteredGroups.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm font-medium text-foreground">
+              <div className="flex flex-col items-center justify-center h-64 px-4 text-center">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <MessageCircle className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <p className="font-medium text-foreground mb-1">
                   {searchQuery ? "No groups found" : "No groups yet"}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {searchQuery ? "Try a different search" : "Create or join a group"}
+                <p className="text-sm text-muted-foreground mb-4">
+                  {searchQuery ? "Try a different search" : "Create or join a group to start chatting"}
                 </p>
+                {!searchQuery && (
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => setIsCreateOpen(true)}>
+                      <Plus className="w-4 h-4 mr-1" />
+                      Create
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setIsJoinOpen(true)}>
+                      <LogIn className="w-4 h-4 mr-1" />
+                      Join
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="space-y-1">
+              <div>
                 {filteredGroups.map((g) => (
                   <GroupListItem
                     key={g.id}
                     group={g}
                     isSelected={selectedGroupId === g.id}
                     isOwner={g.owner_id === user.id}
-                    onSelect={() => setSelectedGroupId(g.id)}
+                    lastMessage={getLastMessage(g.id)}
+                    onSelect={() => handleSelectGroup(g.id)}
                     onCopyCode={() => handleCopyInviteCode(g.invite_code)}
                     onDelete={() => handleDeleteGroup(g.id)}
                     onLeave={() => handleLeaveGroup(g.id)}
@@ -218,50 +264,42 @@ const Groups = () => {
         </div>
 
         {/* Main Content - Chat View */}
-        <div className="flex-1 flex flex-col rounded-xl bg-card border border-border overflow-hidden min-h-[300px] lg:min-h-0">
+        <div className={cn(
+          "flex-1 flex flex-col min-w-0",
+          !showMobileChat && !selectedGroupId ? "hidden md:flex" : "flex",
+          showMobileChat && selectedGroupId ? "flex" : "hidden md:flex"
+        )}>
           {!selectedGroupId || !group ? (
-            <div className="flex-1 flex items-center justify-center p-4">
-              <div className="text-center">
-                <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <h3 className="font-semibold text-foreground mb-1">Select a group</h3>
-                <p className="text-sm text-muted-foreground">Choose a group to start chatting</p>
+            <div className="flex-1 flex items-center justify-center bg-muted/20">
+              <div className="text-center px-4">
+                <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-10 h-10 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">Welcome to Groups</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  Select a group to start chatting or create a new one to connect with your team.
+                </p>
               </div>
             </div>
           ) : detailsLoading ? (
             <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
           ) : (
-            <>
-              {/* Chat Header */}
-              <div className="px-3 sm:px-4 py-3 border-b border-border flex items-center justify-between gap-3">
-                <button
-                  onClick={() => setIsDetailOpen(true)}
-                  className="flex items-center gap-3 min-w-0 hover:opacity-80 transition-opacity"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <Hash className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="min-w-0 text-left">
-                    <h2 className="font-semibold text-foreground truncate">{group.name}</h2>
-                    <p className="text-xs text-muted-foreground">
-                      {members.length} {members.length === 1 ? "member" : "members"} • Tap for details
-                    </p>
-                  </div>
-                </button>
-                <Button variant="ghost" size="icon" onClick={() => setIsDetailOpen(true)} className="shrink-0">
-                  <Info className="w-5 h-5" />
-                </Button>
-              </div>
-
-              {/* Chat Messages */}
-              <GroupChat
-                messages={messages}
-                currentUserId={user.id}
-                groupId={group.id}
-                onSendMessage={sendMessage}
-              />
-            </>
+            <GroupChatView
+              group={group}
+              messages={messages}
+              members={members}
+              currentUserId={user.id}
+              isOwner={isOwner}
+              onSendMessage={sendMessage}
+              onOpenDetails={() => setIsDetailOpen(true)}
+              onLeaveGroup={() => handleLeaveGroup(group.id)}
+              onClearChat={clearChat}
+              onStarMessage={starMessage}
+              onUnstarMessage={unstarMessage}
+              onDeleteMessage={deleteMessage}
+            />
           )}
         </div>
       </div>
@@ -287,25 +325,37 @@ const Groups = () => {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Create New Group</DialogTitle>
-            <DialogDescription>Create a group to chat and share files.</DialogDescription>
+            <DialogTitle>New group</DialogTitle>
+            <DialogDescription>Create a group to chat and share files with your team.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 pt-2">
-            <Input
-              placeholder="Group name"
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-              className="h-10"
-            />
-            <Textarea
-              placeholder="Description (optional)"
-              value={newGroupDescription}
-              onChange={(e) => setNewGroupDescription(e.target.value)}
-              className="resize-none"
-              rows={2}
-            />
-            <Button onClick={handleCreateGroup} disabled={isCreating || !newGroupName.trim()} className="w-full">
-              {isCreating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+          <div className="space-y-4 pt-2">
+            <div>
+              <Input
+                placeholder="Group name"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                className="h-11"
+              />
+            </div>
+            <div>
+              <Textarea
+                placeholder="Group description (optional)"
+                value={newGroupDescription}
+                onChange={(e) => setNewGroupDescription(e.target.value)}
+                className="resize-none"
+                rows={3}
+              />
+            </div>
+            <Button 
+              onClick={handleCreateGroup} 
+              disabled={isCreating || !newGroupName.trim()} 
+              className="w-full h-11"
+            >
+              {isCreating ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Plus className="w-4 h-4 mr-2" />
+              )}
               Create Group
             </Button>
           </div>
@@ -316,18 +366,26 @@ const Groups = () => {
       <Dialog open={isJoinOpen} onOpenChange={setIsJoinOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Join a Group</DialogTitle>
-            <DialogDescription>Enter the invite code to join.</DialogDescription>
+            <DialogTitle>Join a group</DialogTitle>
+            <DialogDescription>Enter the invite code shared by a group member.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 pt-2">
+          <div className="space-y-4 pt-2">
             <Input
-              placeholder="Invite code"
+              placeholder="Enter invite code"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
-              className="h-10"
+              className="h-11 text-center text-lg tracking-wider"
             />
-            <Button onClick={handleJoinGroup} disabled={isJoining || !inviteCode.trim()} className="w-full">
-              {isJoining ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <LogIn className="w-4 h-4 mr-2" />}
+            <Button 
+              onClick={handleJoinGroup} 
+              disabled={isJoining || !inviteCode.trim()} 
+              className="w-full h-11"
+            >
+              {isJoining ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <LogIn className="w-4 h-4 mr-2" />
+              )}
               Join Group
             </Button>
           </div>
@@ -336,83 +394,5 @@ const Groups = () => {
     </DashboardLayout>
   );
 };
-
-// Group List Item Component
-interface GroupListItemProps {
-  group: Group;
-  isSelected: boolean;
-  isOwner: boolean;
-  onSelect: () => void;
-  onCopyCode: () => void;
-  onDelete: () => void;
-  onLeave: () => void;
-}
-
-const GroupListItem = ({
-  group,
-  isSelected,
-  isOwner,
-  onSelect,
-  onCopyCode,
-  onDelete,
-  onLeave,
-}: GroupListItemProps) => (
-  <div
-    className={cn(
-      "group flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-colors",
-      isSelected ? "bg-primary/10" : "hover:bg-muted/50"
-    )}
-    onClick={onSelect}
-  >
-    <div className="flex items-center gap-2.5 min-w-0">
-      <div
-        className={cn(
-          "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-          isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-        )}
-      >
-        <Hash className="w-4 h-4" />
-      </div>
-      <div className="min-w-0">
-        <p className={cn("font-medium text-sm truncate", isSelected && "text-primary")}>
-          {group.name}
-        </p>
-        {group.description && (
-          <p className="text-xs text-muted-foreground truncate">{group.description}</p>
-        )}
-      </div>
-    </div>
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreVertical className="w-4 h-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={onCopyCode}>
-          <Copy className="w-4 h-4 mr-2" />
-          Copy invite code
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        {isOwner ? (
-          <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={onDelete}>
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete group
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem onClick={onLeave}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Leave group
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  </div>
-);
 
 export default Groups;
