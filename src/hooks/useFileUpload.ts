@@ -18,6 +18,7 @@ interface TusUploadInstance {
   upload: tus.Upload;
   file: File;
   storagePath: string;
+  uploadUrl?: string; // Store the URL for resuming
 }
 
 export const useFileUpload = () => {
@@ -133,6 +134,20 @@ export const useFileUpload = () => {
                   : u
               )
             );
+
+            // Update bytes_uploaded in database periodically (every 10%)
+            const currentProgress = Math.floor(progress / 10) * 10;
+            const instance = uploadInstancesRef.current.get(uploadId);
+            if (instance) {
+              const lastProgress = Math.floor((instance.upload as any)._lastReportedProgress || 0);
+              if (currentProgress > lastProgress) {
+                (instance.upload as any)._lastReportedProgress = currentProgress;
+                supabase
+                  .from('uploads')
+                  .update({ bytes_uploaded: bytesUploaded })
+                  .eq('id', uploadId);
+              }
+            }
           },
           onSuccess: async () => {
             // Create file record in database
@@ -171,6 +186,16 @@ export const useFileUpload = () => {
 
             uploadInstancesRef.current.delete(uploadId);
             resolve(uploadId);
+          },
+          onAfterResponse: (req, res) => {
+            // Capture the upload URL after the first response for resuming
+            const uploadUrl = res.getHeader('Location');
+            if (uploadUrl) {
+              const instance = uploadInstancesRef.current.get(uploadId);
+              if (instance) {
+                instance.uploadUrl = uploadUrl;
+              }
+            }
           },
         });
 
@@ -243,7 +268,121 @@ export const useFileUpload = () => {
 
   const resumeUpload = useCallback(async (uploadId: string) => {
     const instance = uploadInstancesRef.current.get(uploadId);
-    if (instance) {
+    if (instance && instance.uploadUrl) {
+      // Get fresh session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          variant: 'destructive',
+          title: 'Session expired',
+          description: 'Please sign in again to continue.',
+        });
+        return;
+      }
+
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      // Create a new upload instance with the stored URL to resume from
+      const resumedUpload = new tus.Upload(instance.file, {
+        endpoint: `https://${projectId}.supabase.co/storage/v1/upload/resumable`,
+        uploadUrl: instance.uploadUrl, // Use the stored URL to resume
+        retryDelays: [0, 3000, 5000, 10000, 20000],
+        headers: {
+          authorization: `Bearer ${session.access_token}`,
+          apikey: anonKey,
+        },
+        uploadDataDuringCreation: true,
+        removeFingerprintOnSuccess: true,
+        chunkSize: 6 * 1024 * 1024,
+        metadata: {
+          bucketName: 'user-files',
+          objectName: instance.storagePath,
+          contentType: instance.file.type,
+          cacheControl: '3600',
+        },
+        onError: async (error) => {
+          console.error('Resume upload error:', error);
+
+          await supabase
+            .from('uploads')
+            .update({ status: 'failed' })
+            .eq('id', uploadId);
+
+          setUploads(prev =>
+            prev.map(u =>
+              u.id === uploadId
+                ? { ...u, status: 'failed' as const, error: error.message }
+                : u
+            )
+          );
+
+          toast({
+            variant: 'destructive',
+            title: 'Upload failed',
+            description: error.message,
+          });
+
+          uploadInstancesRef.current.delete(uploadId);
+        },
+        onProgress: (bytesUploaded, bytesTotal) => {
+          const progress = Math.round((bytesUploaded / bytesTotal) * 100);
+          
+          setUploads(prev =>
+            prev.map(u =>
+              u.id === uploadId
+                ? { ...u, status: 'uploading' as const, progress, bytesUploaded }
+                : u
+            )
+          );
+        },
+        onSuccess: async () => {
+          const { error: fileError } = await supabase.from('files').insert({
+            user_id: session.user.id,
+            folder_id: null,
+            name: instance.file.name,
+            original_name: instance.file.name,
+            size: instance.file.size,
+            mime_type: instance.file.type,
+            storage_path: instance.storagePath,
+          });
+
+          if (fileError) {
+            console.error('File record error:', fileError);
+          }
+
+          await supabase
+            .from('uploads')
+            .update({ status: 'completed', bytes_uploaded: instance.file.size })
+            .eq('id', uploadId);
+
+          setUploads(prev =>
+            prev.map(u =>
+              u.id === uploadId
+                ? { ...u, status: 'completed' as const, progress: 100, bytesUploaded: instance.file.size }
+                : u
+            )
+          );
+
+          toast({
+            title: 'Upload complete',
+            description: `${instance.file.name} uploaded successfully.`,
+          });
+
+          uploadInstancesRef.current.delete(uploadId);
+        },
+        onAfterResponse: (req, res) => {
+          const uploadUrl = res.getHeader('Location');
+          if (uploadUrl) {
+            instance.uploadUrl = uploadUrl;
+          }
+        },
+      });
+
+      // Update the stored instance with the new upload
+      instance.upload = resumedUpload;
+      uploadInstancesRef.current.set(uploadId, instance);
+
       await supabase
         .from('uploads')
         .update({ status: 'uploading' })
@@ -255,12 +394,25 @@ export const useFileUpload = () => {
         )
       );
 
-      instance.upload.start();
+      resumedUpload.start();
 
       toast({
         title: 'Upload resumed',
-        description: 'Continuing upload...',
+        description: 'Continuing from where you left off...',
       });
+    } else if (instance && !instance.uploadUrl) {
+      // No upload URL stored yet - restart the upload
+      toast({
+        title: 'Restarting upload',
+        description: 'Upload will start from beginning.',
+      });
+      instance.upload.start();
+      
+      setUploads(prev =>
+        prev.map(u =>
+          u.id === uploadId ? { ...u, status: 'uploading' as const } : u
+        )
+      );
     }
   }, [toast]);
 
