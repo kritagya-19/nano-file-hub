@@ -34,9 +34,11 @@ export interface GroupMessage {
   file_name?: string | null;
   file_type?: string | null;
   file_size?: number | null;
+  starred_by?: string[];
   profile?: {
     full_name: string | null;
     username: string | null;
+    avatar_url?: string | null;
   };
 }
 
@@ -600,6 +602,112 @@ export const useGroupDetails = (groupId: string | null) => {
     }
   };
 
+  // Star a message
+  const starMessage = async (messageId: string): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      // Get current starred_by array
+      const message = messages.find(m => m.id === messageId);
+      const currentStarred = message?.starred_by || [];
+      
+      if (currentStarred.includes(user.id)) return true; // Already starred
+      
+      const newStarred = [...currentStarred, user.id];
+
+      const { error } = await supabase
+        .from('group_messages')
+        .update({ starred_by: newStarred })
+        .eq('id', messageId);
+
+      if (error) throw error;
+
+      setMessages(prev => prev.map(m => 
+        m.id === messageId ? { ...m, starred_by: newStarred } : m
+      ));
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error starring message:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to star message',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
+  // Unstar a message
+  const unstarMessage = async (messageId: string): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      const message = messages.find(m => m.id === messageId);
+      const currentStarred = message?.starred_by || [];
+      const newStarred = currentStarred.filter(id => id !== user.id);
+
+      const { error } = await supabase
+        .from('group_messages')
+        .update({ starred_by: newStarred })
+        .eq('id', messageId);
+
+      if (error) throw error;
+
+      setMessages(prev => prev.map(m => 
+        m.id === messageId ? { ...m, starred_by: newStarred } : m
+      ));
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error unstarring message:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to unstar message',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
+  // Delete a message
+  const deleteMessage = async (messageId: string): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      const { error } = await supabase
+        .from('group_messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+      toast({
+        title: 'Message deleted',
+      });
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting message:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete message',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
+  // Clear chat (local only - removes from view)
+  const clearChat = () => {
+    setMessages([]);
+    toast({
+      title: 'Chat cleared',
+      description: 'Messages will reappear when you reload',
+    });
+  };
+
   // Fetch details when groupId changes
   useEffect(() => {
     fetchGroupDetails();
@@ -628,12 +736,13 @@ export const useGroupDetails = (groupId: string | null) => {
           // Fetch profile for the message author
           const { data: profileData } = await supabase
             .from('profiles')
-            .select('id, full_name, username')
+            .select('id, full_name, username, avatar_url')
             .eq('id', newMessage.user_id)
             .maybeSingle();
 
           const enrichedMessage: GroupMessage = {
             ...newMessage,
+            starred_by: newMessage.starred_by || [],
             profile: profileData || undefined,
           };
 
@@ -662,6 +771,10 @@ export const useGroupDetails = (groupId: string | null) => {
     removeMember,
     shareFile,
     unshareFile,
+    starMessage,
+    unstarMessage,
+    deleteMessage,
+    clearChat,
     refetch: fetchGroupDetails,
   };
 };
