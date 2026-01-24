@@ -78,14 +78,21 @@ const Share = () => {
 
     setDownloading(true);
     try {
-      const { data, error: downloadError } = await supabase.storage
+      // Use signed URL for public downloads - works without authentication
+      const { data: signedData, error: signedError } = await supabase.storage
         .from('user-files')
-        .download(file.storage_path);
+        .createSignedUrl(file.storage_path, 3600); // 1 hour expiry
 
-      if (downloadError) throw downloadError;
+      if (signedError || !signedData?.signedUrl) {
+        throw signedError || new Error('Failed to generate download URL');
+      }
 
-      // Create download link
-      const url = URL.createObjectURL(data);
+      // Fetch the file using the signed URL
+      const response = await fetch(signedData.signedUrl);
+      if (!response.ok) throw new Error('Download failed');
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = file.original_name;
