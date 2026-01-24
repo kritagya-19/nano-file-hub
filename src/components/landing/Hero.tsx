@@ -19,7 +19,7 @@ const Hero = () => {
       <div className="container mx-auto max-w-6xl relative z-10 px-4 sm:px-6">
         <div className="flex flex-col items-center text-center">
 
-          {/* Heading - Pain point → Solution */}
+          {/* Heading - Simple & Clear */}
           <h1
             className={cn(
               "text-gradient",
@@ -30,10 +30,10 @@ const Hero = () => {
               "leading-[1.15] sm:leading-[1.1]"
             )}
           >
-            Stop Losing Files. Start Sharing Smarter.
+            Share Big Files. Simply.
           </h1>
 
-          {/* Description - Benefit focused */}
+          {/* Description - Easy to understand */}
           <p
             className={cn(
               "text-muted-foreground",
@@ -45,12 +45,12 @@ const Hero = () => {
               "leading-relaxed"
             )}
           >
-            Upload files up to 10GB that <span className="text-foreground font-medium">never fail mid-transfer</span>. 
-            Our resumable uploads pick up right where you left off — even if your internet drops. 
-            Finally, file sharing that just works.
+            Send files up to <span className="text-foreground font-medium">10GB for free</span>. 
+            If your internet goes out, your upload keeps going when you're back online. 
+            No more starting over.
           </p>
 
-          {/* CTAs - Clear action + lower commitment option */}
+          {/* CTAs - Clear & Simple */}
           <div
             className={cn(
               "flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto",
@@ -60,19 +60,19 @@ const Hero = () => {
           >
             <Link to="/auth" className="w-full sm:w-auto">
               <Button size="lg" className="gap-2 shadow-lg w-full sm:w-auto text-sm sm:text-base">
-                Start Free — No Card Required
+                Try It Free
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
             <a href="#how-it-works" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto text-sm sm:text-base">
                 <Play className="w-4 h-4" />
-                See How It Works
+                How It Works
               </Button>
             </a>
           </div>
 
-          {/* Social proof micro-stats */}
+          {/* Social proof */}
           <div
             className={cn(
               "flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8 mt-8 sm:mt-10",
@@ -81,18 +81,18 @@ const Hero = () => {
             )}
           >
             <div className="text-center px-2">
-              <p className="text-xl sm:text-2xl font-bold text-foreground">50M+</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Files Transferred</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">10M+</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Files Shared</p>
             </div>
             <div className="w-px h-6 sm:h-8 bg-border" />
             <div className="text-center px-2">
-              <p className="text-xl sm:text-2xl font-bold text-foreground">99.9%</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Uptime</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">100%</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Free to Start</p>
             </div>
             <div className="w-px h-6 sm:h-8 bg-border" />
             <div className="text-center px-2">
-              <p className="text-xl sm:text-2xl font-bold text-foreground">4.9★</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">User Rating</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">30 sec</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">To Get Started</p>
             </div>
           </div>
 

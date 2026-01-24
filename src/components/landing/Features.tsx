@@ -18,33 +18,33 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: RefreshCw,
-    title: "Never Lose Progress Again",
-    description: "Internet dropped? Laptop died? No problem. Pick up exactly where you left off. Your upload waits for you, not the other way around.",
+    title: "Pause & Resume Uploads",
+    description: "Lost your internet connection? No worries. Your upload will continue exactly where it stopped. No need to start over.",
   },
   {
     icon: Cloud,
-    title: "Your Files, Everywhere",
-    description: "Access from any device, anytime. Local speed when you're in the office, cloud reliability when you're on the move.",
+    title: "Access From Anywhere",
+    description: "Open your files on your phone, laptop, or any computer. Just log in and everything is there waiting for you.",
   },
   {
     icon: Users,
-    title: "Collaborate Without Chaos",
-    description: "Share files with your team in one click. Built-in chat means no more hunting through email threads for that one attachment.",
+    title: "Share With Your Team",
+    description: "Create a group, invite your friends or classmates, and share files instantly. Everyone can chat and download together.",
   },
   {
     icon: Shield,
-    title: "Bank-Level Security",
-    description: "256-bit encryption protects every file. Your confidential data stays confidential — we can't even see it.",
+    title: "Your Files Stay Private",
+    description: "We protect your files with the same security banks use. Only people you share with can see your stuff.",
   },
   {
     icon: Zap,
-    title: "Blazing Fast Transfers",
-    description: "Upload 10GB in minutes, not hours. Our optimized infrastructure means you spend less time waiting and more time doing.",
+    title: "Fast Uploads",
+    description: "Upload big files in minutes, not hours. Our system is built for speed so you can get back to work quickly.",
   },
   {
     icon: Download,
-    title: "One-Click Downloads",
-    description: "No signups required for recipients. Share a link, they click, they download. It's that simple.",
+    title: "Easy Downloads",
+    description: "Share a link with anyone. They can download without signing up — just click and get the file.",
   },
 ];
 
@@ -69,9 +69,9 @@ const Features = () => {
               "[animation-delay:100ms]"
             )}
           >
-            File Sharing That{" "}
+            Everything You Need to{" "}
             <span className="relative inline-block">
-              <span className="text-gradient">Actually Works</span>
+              <span className="text-gradient">Share Files</span>
               <svg className="absolute -bottom-1 sm:-bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
                 <path d="M2 10C50 4 150 4 198 10" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" className="opacity-60"/>
               </svg>
@@ -87,8 +87,8 @@ const Features = () => {
               "leading-relaxed"
             )}
           >
-            We fixed everything that's broken about file sharing. 
-            No more failed uploads, lost files, or security nightmares.
+            Simple tools that make sharing big files easy. 
+            No confusing settings, no complicated steps.
           </p>
         </div>
 
@@ -156,28 +156,28 @@ const Features = () => {
           <div className="text-center">
             {/* Trusted by text */}
             <p className="text-xs sm:text-sm text-muted-foreground mb-6 sm:mb-8 uppercase tracking-widest font-medium">
-              Trusted by teams at
+              Trusted by students & teams at
             </p>
             
             {/* Logo Grid - Text-based wordmarks */}
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 sm:gap-x-8 md:gap-x-10 lg:gap-x-14">
               <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold tracking-tight text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default">
-                Google
+                Stanford
               </span>
               <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold tracking-wide text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default">
-                Microsoft
+                MIT
               </span>
-              <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold tracking-tighter text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default italic">
-                Spotify
+              <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold tracking-tighter text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default">
+                NYU
               </span>
               <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold tracking-tight text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default">
-                Airbnb
+                UCLA
               </span>
               <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold tracking-wide text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default">
-                Stripe
+                Harvard
               </span>
               <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-medium tracking-tight text-foreground/40 hover:text-foreground/80 transition-colors duration-300 cursor-default">
-                Notion
+                Berkeley
               </span>
             </div>
           </div>
