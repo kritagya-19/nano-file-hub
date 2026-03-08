@@ -720,8 +720,9 @@ const Files = () => {
                         </p>
                       </div>
                     </motion.div>
-                  );
-                })}
+                      </DraggableFile>
+                    );
+                  })}
               </AnimatePresence>
             </div>
           ) : (
