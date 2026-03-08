@@ -851,6 +851,10 @@ const Files = () => {
                                 Share
                               </DropdownMenuItem>
                             )}
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setMoveDialogFile(file); }}>
+                              <FolderInput className="w-4 h-4 mr-2" />
+                              Move to...
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDeleteFile(file)}
