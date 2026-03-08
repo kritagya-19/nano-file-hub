@@ -2,11 +2,14 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors, useDroppable, useDraggable } from "@dnd-kit/core";
 import { useAuth } from "@/hooks/useAuth";
-import { useFiles } from "@/hooks/useFiles";
+import { useFiles, FileItem } from "@/hooks/useFiles";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import FileUploadZone from "@/components/files/FileUploadZone";
+import FilePreviewModal from "@/components/files/FilePreviewModal";
+import MoveToFolderDialog from "@/components/files/MoveToFolderDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -51,8 +54,9 @@ import {
   SortAsc,
   Filter,
   Eye,
+  FolderInput,
+  GripVertical,
 } from "lucide-react";
-import FilePreviewModal from "@/components/files/FilePreviewModal";
 
 const Files = () => {
   const { user, loading: authLoading } = useAuth();
