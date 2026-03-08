@@ -500,6 +500,7 @@ const Files = () => {
         </motion.div>
 
         {/* File Grid/List */}
+        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
