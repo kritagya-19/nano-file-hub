@@ -50,7 +50,9 @@ import {
   Search,
   SortAsc,
   Filter,
+  Eye,
 } from "lucide-react";
+import FilePreviewModal from "@/components/files/FilePreviewModal";
 
 const Files = () => {
   const { user, loading: authLoading } = useAuth();
