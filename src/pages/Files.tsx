@@ -10,6 +10,8 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import FileUploadZone from "@/components/files/FileUploadZone";
 import FilePreviewModal from "@/components/files/FilePreviewModal";
 import MoveToFolderDialog from "@/components/files/MoveToFolderDialog";
+import { DroppableFolder } from "@/components/files/DroppableFolder";
+import { DraggableFile } from "@/components/files/DraggableFile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
