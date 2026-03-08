@@ -91,7 +91,17 @@ const Files = () => {
     shareFile,
     unshareFile,
     getShareLink,
+    moveFile,
+    getAllFolders,
   } = useFiles(currentFolderId);
+
+  const [moveDialogFile, setMoveDialogFile] = useState<FileItem | null>(null);
+  const [dragActiveId, setDragActiveId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
 
   useEffect(() => {
     if (!authLoading && !user) {
