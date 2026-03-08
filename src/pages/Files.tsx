@@ -562,8 +562,8 @@ const Files = () => {
               <AnimatePresence mode="popLayout">
                 {/* Folders */}
                 {filteredFolders.map((folder, index) => (
+                  <DroppableFolder key={folder.id} folderId={folder.id}>
                   <motion.div
-                    key={folder.id}
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
@@ -609,6 +609,7 @@ const Files = () => {
                       {formatDate(folder.created_at)}
                     </p>
                   </motion.div>
+                  </DroppableFolder>
                 ))}
 
                 {/* Files */}
