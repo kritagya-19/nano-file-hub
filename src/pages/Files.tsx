@@ -602,7 +602,11 @@ const Files = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleDownloadFile(file)}>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handlePreviewFile(file); }}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              Preview
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDownloadFile(file); }}>
                               <Download className="w-4 h-4 mr-2" />
                               Download
                             </DropdownMenuItem>
