@@ -2,11 +2,16 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors, useDroppable, useDraggable } from "@dnd-kit/core";
 import { useAuth } from "@/hooks/useAuth";
-import { useFiles } from "@/hooks/useFiles";
+import { useFiles, FileItem } from "@/hooks/useFiles";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import FileUploadZone from "@/components/files/FileUploadZone";
+import FilePreviewModal from "@/components/files/FilePreviewModal";
+import MoveToFolderDialog from "@/components/files/MoveToFolderDialog";
+import { DroppableFolder } from "@/components/files/DroppableFolder";
+import { DraggableFile } from "@/components/files/DraggableFile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -51,8 +56,9 @@ import {
   SortAsc,
   Filter,
   Eye,
+  FolderInput,
+  GripVertical,
 } from "lucide-react";
-import FilePreviewModal from "@/components/files/FilePreviewModal";
 
 const Files = () => {
   const { user, loading: authLoading } = useAuth();
@@ -87,7 +93,17 @@ const Files = () => {
     shareFile,
     unshareFile,
     getShareLink,
+    moveFile,
+    getAllFolders,
   } = useFiles(currentFolderId);
+
+  const [moveDialogFile, setMoveDialogFile] = useState<FileItem | null>(null);
+  const [dragActiveId, setDragActiveId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -291,6 +307,45 @@ const Files = () => {
     [filteredFiles]
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setDragActiveId(event.active.id as string);
+  };
+
+  const handleDragOver = (event: any) => {
+    setDropTargetId(event.over?.id as string || null);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    setDragActiveId(null);
+    setDropTargetId(null);
+    const { active, over } = event;
+    if (!over) return;
+    const fileId = active.id as string;
+    const targetFolderId = over.id as string;
+    // Only allow dropping on folders
+    if (!folders.find((f) => f.id === targetFolderId)) return;
+    const file = files.find((f) => f.id === fileId);
+    if (!file) return;
+    try {
+      await moveFile(fileId, targetFolderId);
+      toast({ title: "File moved", description: `"${file.original_name}" moved successfully.` });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Failed to move file", description: err.message });
+    }
+  };
+
+  const handleMoveFile = async (targetFolderId: string | null) => {
+    if (!moveDialogFile) return;
+    try {
+      await moveFile(moveDialogFile.id, targetFolderId);
+      toast({ title: "File moved", description: `"${moveDialogFile.original_name}" moved successfully.` });
+      setMoveDialogFile(null);
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Failed to move file", description: err.message });
+      throw err;
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -445,6 +500,7 @@ const Files = () => {
         </motion.div>
 
         {/* File Grid/List */}
+        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -506,8 +562,8 @@ const Files = () => {
               <AnimatePresence mode="popLayout">
                 {/* Folders */}
                 {filteredFolders.map((folder, index) => (
+                  <DroppableFolder key={folder.id} folderId={folder.id}>
                   <motion.div
-                    key={folder.id}
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
@@ -553,6 +609,7 @@ const Files = () => {
                       {formatDate(folder.created_at)}
                     </p>
                   </motion.div>
+                  </DroppableFolder>
                 ))}
 
                 {/* Files */}
@@ -561,8 +618,9 @@ const Files = () => {
                   const isDeleting = deletingId === file.id;
                   const isShared = file.is_public && file.share_token;
 
-                  return (
-                    <motion.div
+                    return (
+                      <DraggableFile key={file.id} fileId={file.id}>
+                      <motion.div
                       key={file.id}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -632,6 +690,10 @@ const Files = () => {
                                 Share with Link
                               </DropdownMenuItem>
                             )}
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setMoveDialogFile(file); }}>
+                              <FolderInput className="w-4 h-4 mr-2" />
+                              Move to...
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDeleteFile(file)}
@@ -658,8 +720,9 @@ const Files = () => {
                         </p>
                       </div>
                     </motion.div>
-                  );
-                })}
+                      </DraggableFile>
+                    );
+                  })}
               </AnimatePresence>
             </div>
           ) : (
@@ -788,6 +851,10 @@ const Files = () => {
                                 Share
                               </DropdownMenuItem>
                             )}
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setMoveDialogFile(file); }}>
+                              <FolderInput className="w-4 h-4 mr-2" />
+                              Move to...
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDeleteFile(file)}
@@ -806,6 +873,7 @@ const Files = () => {
             </div>
           )}
         </motion.div>
+        </DndContext>
 
         {/* File Preview Modal */}
         <FilePreviewModal
@@ -815,6 +883,16 @@ const Files = () => {
           onNavigate={setPreviewFileIndex}
           getFileUrl={getFileUrl}
           onDownload={handleDownloadFile}
+        />
+
+        {/* Move to Folder Dialog */}
+        <MoveToFolderDialog
+          open={!!moveDialogFile}
+          onOpenChange={(open) => !open && setMoveDialogFile(null)}
+          fileName={moveDialogFile?.original_name || ""}
+          currentFolderId={currentFolderId}
+          getAllFolders={getAllFolders}
+          onMove={handleMoveFile}
         />
       </div>
     </DashboardLayout>

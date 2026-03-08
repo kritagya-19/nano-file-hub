@@ -204,6 +204,40 @@ export const useFiles = (folderId?: string | null) => {
     }
   }, []);
 
+  const moveFile = useCallback(async (fileId: string, targetFolderId: string | null) => {
+    try {
+      const { error } = await supabase
+        .from('files')
+        .update({ folder_id: targetFolderId })
+        .eq('id', fileId);
+
+      if (error) throw error;
+
+      // Remove from local state since it moved to another folder
+      setFiles(prev => prev.filter(f => f.id !== fileId));
+      return true;
+    } catch (err: any) {
+      console.error('Error moving file:', err);
+      throw err;
+    }
+  }, []);
+
+  const getAllFolders = useCallback(async () => {
+    if (!user) return [];
+    try {
+      const { data, error } = await supabase
+        .from('folders')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.error('Error fetching all folders:', err);
+      return [];
+    }
+  }, [user]);
+
   const getShareLink = useCallback((shareToken: string) => {
     return `${window.location.origin}/share/${shareToken}`;
   }, []);
@@ -241,5 +275,7 @@ export const useFiles = (folderId?: string | null) => {
     shareFile,
     unshareFile,
     getShareLink,
+    moveFile,
+    getAllFolders,
   };
 };
