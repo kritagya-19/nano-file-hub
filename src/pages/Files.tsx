@@ -592,7 +592,7 @@ const Files = () => {
                           <FileIcon className="w-6 h-6 text-muted-foreground" />
                         </div>
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                             <Button
                               variant="ghost"
                               size="icon"
