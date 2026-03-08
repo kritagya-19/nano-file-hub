@@ -806,6 +806,16 @@ const Files = () => {
             </div>
           )}
         </motion.div>
+
+        {/* File Preview Modal */}
+        <FilePreviewModal
+          files={filteredFiles}
+          currentIndex={previewFileIndex}
+          onClose={() => setPreviewFileIndex(null)}
+          onNavigate={setPreviewFileIndex}
+          getFileUrl={getFileUrl}
+          onDownload={handleDownloadFile}
+        />
       </div>
     </DashboardLayout>
   );
