@@ -50,7 +50,9 @@ import {
   Search,
   SortAsc,
   Filter,
+  Eye,
 } from "lucide-react";
+import FilePreviewModal from "@/components/files/FilePreviewModal";
 
 const Files = () => {
   const { user, loading: authLoading } = useAuth();
@@ -70,6 +72,7 @@ const Files = () => {
   const [sharingId, setSharingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [storageUsage, setStorageUsage] = useState({ used: 0, total: 5 * 1024 * 1024 * 1024 });
+  const [previewFileIndex, setPreviewFileIndex] = useState<number | null>(null);
 
   const {
     files,
@@ -278,6 +281,14 @@ const Files = () => {
   );
   const filteredFiles = files.filter((f) =>
     f.original_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handlePreviewFile = useCallback(
+    (file: any) => {
+      const index = filteredFiles.findIndex((f) => f.id === file.id);
+      if (index !== -1) setPreviewFileIndex(index);
+    },
+    [filteredFiles]
   );
 
   if (authLoading) {
@@ -557,8 +568,9 @@ const Files = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: (filteredFolders.length + index) * 0.03 }}
+                      onClick={() => handlePreviewFile(file)}
                       className={cn(
-                        "group relative p-5 rounded-2xl",
+                        "group relative p-5 rounded-2xl cursor-pointer",
                         "bg-card border border-border/50",
                         "hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5",
                         "transition-all duration-200 hover:-translate-y-0.5",
@@ -580,7 +592,7 @@ const Files = () => {
                           <FileIcon className="w-6 h-6 text-muted-foreground" />
                         </div>
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                             <Button
                               variant="ghost"
                               size="icon"
@@ -590,7 +602,11 @@ const Files = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleDownloadFile(file)}>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handlePreviewFile(file); }}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              Preview
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDownloadFile(file); }}>
                               <Download className="w-4 h-4 mr-2" />
                               Download
                             </DropdownMenuItem>
@@ -706,7 +722,8 @@ const Files = () => {
                   return (
                     <div
                       key={file.id}
-                      className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-muted/30 transition-colors group"
+                      onClick={() => handlePreviewFile(file)}
+                      className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-muted/30 transition-colors group cursor-pointer"
                     >
                       <div className="col-span-6 sm:col-span-5 flex items-center gap-3 min-w-0">
                         <div className="relative">
@@ -745,6 +762,11 @@ const Files = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handlePreviewFile(file); }}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              Preview
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             {isShared ? (
                               <>
                                 <DropdownMenuItem onClick={() => handleCopyLink(file)}>
@@ -784,6 +806,16 @@ const Files = () => {
             </div>
           )}
         </motion.div>
+
+        {/* File Preview Modal */}
+        <FilePreviewModal
+          files={filteredFiles}
+          currentIndex={previewFileIndex}
+          onClose={() => setPreviewFileIndex(null)}
+          onNavigate={setPreviewFileIndex}
+          getFileUrl={getFileUrl}
+          onDownload={handleDownloadFile}
+        />
       </div>
     </DashboardLayout>
   );
