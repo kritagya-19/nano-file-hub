@@ -618,8 +618,9 @@ const Files = () => {
                   const isDeleting = deletingId === file.id;
                   const isShared = file.is_public && file.share_token;
 
-                  return (
-                    <motion.div
+                    return (
+                      <DraggableFile key={file.id} fileId={file.id}>
+                      <motion.div
                       key={file.id}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
