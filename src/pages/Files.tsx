@@ -305,7 +305,45 @@ const Files = () => {
     [filteredFiles]
   );
 
-  if (authLoading) {
+  const handleDragStart = (event: DragStartEvent) => {
+    setDragActiveId(event.active.id as string);
+  };
+
+  const handleDragOver = (event: any) => {
+    setDropTargetId(event.over?.id as string || null);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    setDragActiveId(null);
+    setDropTargetId(null);
+    const { active, over } = event;
+    if (!over) return;
+    const fileId = active.id as string;
+    const targetFolderId = over.id as string;
+    // Only allow dropping on folders
+    if (!folders.find((f) => f.id === targetFolderId)) return;
+    const file = files.find((f) => f.id === fileId);
+    if (!file) return;
+    try {
+      await moveFile(fileId, targetFolderId);
+      toast({ title: "File moved", description: `"${file.original_name}" moved successfully.` });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Failed to move file", description: err.message });
+    }
+  };
+
+  const handleMoveFile = async (targetFolderId: string | null) => {
+    if (!moveDialogFile) return;
+    try {
+      await moveFile(moveDialogFile.id, targetFolderId);
+      toast({ title: "File moved", description: `"${moveDialogFile.original_name}" moved successfully.` });
+      setMoveDialogFile(null);
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Failed to move file", description: err.message });
+      throw err;
+    }
+  };
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
