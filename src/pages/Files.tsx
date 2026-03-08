@@ -283,6 +283,14 @@ const Files = () => {
     f.original_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handlePreviewFile = useCallback(
+    (file: any) => {
+      const index = filteredFiles.findIndex((f) => f.id === file.id);
+      if (index !== -1) setPreviewFileIndex(index);
+    },
+    [filteredFiles]
+  );
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
