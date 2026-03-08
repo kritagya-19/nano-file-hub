@@ -862,6 +862,7 @@ const Files = () => {
             </div>
           )}
         </motion.div>
+        </DndContext>
 
         {/* File Preview Modal */}
         <FilePreviewModal
