@@ -884,6 +884,16 @@ const Files = () => {
           getFileUrl={getFileUrl}
           onDownload={handleDownloadFile}
         />
+
+        {/* Move to Folder Dialog */}
+        <MoveToFolderDialog
+          open={!!moveDialogFile}
+          onOpenChange={(open) => !open && setMoveDialogFile(null)}
+          fileName={moveDialogFile?.original_name || ""}
+          currentFolderId={currentFolderId}
+          getAllFolders={getAllFolders}
+          onMove={handleMoveFile}
+        />
       </div>
     </DashboardLayout>
   );
