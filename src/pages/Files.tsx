@@ -72,6 +72,7 @@ const Files = () => {
   const [sharingId, setSharingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [storageUsage, setStorageUsage] = useState({ used: 0, total: 5 * 1024 * 1024 * 1024 });
+  const [previewFileIndex, setPreviewFileIndex] = useState<number | null>(null);
 
   const {
     files,
