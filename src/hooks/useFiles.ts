@@ -275,5 +275,7 @@ export const useFiles = (folderId?: string | null) => {
     shareFile,
     unshareFile,
     getShareLink,
+    moveFile,
+    getAllFolders,
   };
 };
