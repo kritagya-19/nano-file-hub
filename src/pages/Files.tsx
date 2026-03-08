@@ -722,7 +722,8 @@ const Files = () => {
                   return (
                     <div
                       key={file.id}
-                      className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-muted/30 transition-colors group"
+                      onClick={() => handlePreviewFile(file)}
+                      className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-muted/30 transition-colors group cursor-pointer"
                     >
                       <div className="col-span-6 sm:col-span-5 flex items-center gap-3 min-w-0">
                         <div className="relative">
