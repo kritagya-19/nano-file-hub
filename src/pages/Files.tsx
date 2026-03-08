@@ -762,6 +762,11 @@ const Files = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handlePreviewFile(file); }}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              Preview
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             {isShared ? (
                               <>
                                 <DropdownMenuItem onClick={() => handleCopyLink(file)}>
