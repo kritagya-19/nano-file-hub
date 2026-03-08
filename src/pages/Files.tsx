@@ -568,8 +568,9 @@ const Files = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: (filteredFolders.length + index) * 0.03 }}
+                      onClick={() => handlePreviewFile(file)}
                       className={cn(
-                        "group relative p-5 rounded-2xl",
+                        "group relative p-5 rounded-2xl cursor-pointer",
                         "bg-card border border-border/50",
                         "hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5",
                         "transition-all duration-200 hover:-translate-y-0.5",
