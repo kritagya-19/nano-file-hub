@@ -302,6 +302,7 @@ const Groups = () => {
                     isSelected={selectedGroupId === g.id}
                     isOwner={g.owner_id === user.id}
                     lastMessage={getLastMessage(g.id)}
+                    unreadCount={unreadCounts[g.id] || 0}
                     onSelect={() => handleSelectGroup(g.id)}
                     onCopyCode={() => handleCopyInviteCode(g.invite_code)}
                     onDelete={() => handleDeleteGroup(g.id)}
