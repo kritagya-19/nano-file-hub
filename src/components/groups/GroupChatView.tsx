@@ -59,6 +59,8 @@ export const GroupChatView = ({
   const [showStarred, setShowStarred] = useState(false);
   const [replyTo, setReplyTo] = useState<{ id: string; content: string; userName: string } | null>(null);
   const [reactions, setReactions] = useState<Record<string, MessageReaction[]>>({});
+  const [messageReads, setMessageReads] = useState<Record<string, { user_id: string; read_at: string }[]>>({});
+  const [readReceiptMessageId, setReadReceiptMessageId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
