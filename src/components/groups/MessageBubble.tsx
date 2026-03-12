@@ -115,6 +115,7 @@ export const MessageBubble = ({
   onCopy,
   onReply,
   onReact,
+  onShowReadReceipts,
 }: MessageBubbleProps) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
