@@ -35,6 +35,7 @@ export interface GroupMessage {
   file_type?: string | null;
   file_size?: number | null;
   starred_by?: string[];
+  reply_to?: string | null;
   profile?: {
     full_name: string | null;
     username: string | null;
