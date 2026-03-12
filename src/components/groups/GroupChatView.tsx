@@ -107,6 +107,67 @@ export const GroupChatView = ({
     fetchReactions();
   }, [messages, currentUserId]);
 
+  // Fetch read receipts for messages
+  useEffect(() => {
+    const fetchReads = async () => {
+      if (messages.length === 0) return;
+      const messageIds = messages.map(m => m.id);
+
+      const { data, error } = await supabase
+        .from('message_reads')
+        .select('*')
+        .in('message_id', messageIds);
+
+      if (error || !data) return;
+
+      const grouped: Record<string, { user_id: string; read_at: string }[]> = {};
+      data.forEach((r: any) => {
+        if (!grouped[r.message_id]) grouped[r.message_id] = [];
+        grouped[r.message_id].push({ user_id: r.user_id, read_at: r.read_at });
+      });
+      setMessageReads(grouped);
+    };
+
+    fetchReads();
+  }, [messages]);
+
+  // Mark messages as read when viewing the chat
+  const markMessagesAsRead = useCallback(async () => {
+    if (messages.length === 0) return;
+    
+    // Find messages not sent by current user that haven't been read
+    const unreadMessageIds = messages
+      .filter(m => m.user_id !== currentUserId)
+      .filter(m => !messageReads[m.id]?.some(r => r.user_id === currentUserId))
+      .map(m => m.id);
+
+    if (unreadMessageIds.length === 0) return;
+
+    // Batch insert read receipts (ignore conflicts)
+    const inserts = unreadMessageIds.map(id => ({
+      message_id: id,
+      user_id: currentUserId,
+    }));
+
+    await supabase.from('message_reads').upsert(inserts, { onConflict: 'message_id,user_id' });
+
+    // Update local state
+    setMessageReads(prev => {
+      const updated = { ...prev };
+      unreadMessageIds.forEach(id => {
+        if (!updated[id]) updated[id] = [];
+        if (!updated[id].some(r => r.user_id === currentUserId)) {
+          updated[id] = [...updated[id], { user_id: currentUserId, read_at: new Date().toISOString() }];
+        }
+      });
+      return updated;
+    });
+  }, [messages, currentUserId, messageReads]);
+
+  useEffect(() => {
+    markMessagesAsRead();
+  }, [messages.length]);
+
   const handleReact = async (messageId: string, emoji: string) => {
     // Check if already reacted with this emoji
     const existing = reactions[messageId]?.find(r => r.emoji === emoji && r.reactedByMe);
