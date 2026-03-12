@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ import { ChatHeader } from "./ChatHeader";
 import { ChatInput } from "./ChatInput";
 import { MessageBubble, MessageData, MessageReaction } from "./MessageBubble";
 import { StarredMessagesSheet } from "./StarredMessagesSheet";
+import { ReadReceiptDialog, ReadReceipt } from "./ReadReceiptDialog";
 
 interface GroupChatViewProps {
   group: {
@@ -58,6 +59,8 @@ export const GroupChatView = ({
   const [showStarred, setShowStarred] = useState(false);
   const [replyTo, setReplyTo] = useState<{ id: string; content: string; userName: string } | null>(null);
   const [reactions, setReactions] = useState<Record<string, MessageReaction[]>>({});
+  const [messageReads, setMessageReads] = useState<Record<string, { user_id: string; read_at: string }[]>>({});
+  const [readReceiptMessageId, setReadReceiptMessageId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -103,6 +106,67 @@ export const GroupChatView = ({
 
     fetchReactions();
   }, [messages, currentUserId]);
+
+  // Fetch read receipts for messages
+  useEffect(() => {
+    const fetchReads = async () => {
+      if (messages.length === 0) return;
+      const messageIds = messages.map(m => m.id);
+
+      const { data, error } = await supabase
+        .from('message_reads')
+        .select('*')
+        .in('message_id', messageIds);
+
+      if (error || !data) return;
+
+      const grouped: Record<string, { user_id: string; read_at: string }[]> = {};
+      data.forEach((r: any) => {
+        if (!grouped[r.message_id]) grouped[r.message_id] = [];
+        grouped[r.message_id].push({ user_id: r.user_id, read_at: r.read_at });
+      });
+      setMessageReads(grouped);
+    };
+
+    fetchReads();
+  }, [messages]);
+
+  // Mark messages as read when viewing the chat
+  const markMessagesAsRead = useCallback(async () => {
+    if (messages.length === 0) return;
+    
+    // Find messages not sent by current user that haven't been read
+    const unreadMessageIds = messages
+      .filter(m => m.user_id !== currentUserId)
+      .filter(m => !messageReads[m.id]?.some(r => r.user_id === currentUserId))
+      .map(m => m.id);
+
+    if (unreadMessageIds.length === 0) return;
+
+    // Batch insert read receipts (ignore conflicts)
+    const inserts = unreadMessageIds.map(id => ({
+      message_id: id,
+      user_id: currentUserId,
+    }));
+
+    await supabase.from('message_reads').upsert(inserts, { onConflict: 'message_id,user_id' });
+
+    // Update local state
+    setMessageReads(prev => {
+      const updated = { ...prev };
+      unreadMessageIds.forEach(id => {
+        if (!updated[id]) updated[id] = [];
+        if (!updated[id].some(r => r.user_id === currentUserId)) {
+          updated[id] = [...updated[id], { user_id: currentUserId, read_at: new Date().toISOString() }];
+        }
+      });
+      return updated;
+    });
+  }, [messages, currentUserId, messageReads]);
+
+  useEffect(() => {
+    markMessagesAsRead();
+  }, [messages.length]);
 
   const handleReact = async (messageId: string, emoji: string) => {
     // Check if already reacted with this emoji
@@ -218,11 +282,16 @@ export const GroupChatView = ({
     replyMap.set(m.id, { content: m.content, user_name: name });
   });
 
-  // Enrich messages with reply info and reactions
+  // Enrich messages with reply info, reactions, and read info
+  const otherMembersCount = members.filter(m => m.user_id !== currentUserId).length;
   const enrichedMessages: MessageData[] = messages.map(m => ({
     ...m,
     reply_to_message: m.reply_to ? replyMap.get(m.reply_to) || null : null,
     reactions: reactions[m.id] || [],
+    readInfo: m.user_id === currentUserId ? {
+      readByCount: messageReads[m.id]?.length || 0,
+      totalMembers: otherMembersCount,
+    } : undefined,
   }));
 
   // Group messages by date
@@ -297,8 +366,8 @@ export const GroupChatView = ({
                         onUnstar={onUnstarMessage}
                         onDelete={onDeleteMessage}
                         onCopy={handleCopy}
-                        onReply={handleReply}
                         onReact={handleReact}
+                        onShowReadReceipts={(msgId) => setReadReceiptMessageId(msgId)}
                       />
                     );
                   })}
@@ -326,6 +395,26 @@ export const GroupChatView = ({
         messages={enrichedMessages}
         currentUserId={currentUserId}
         onUnstar={onUnstarMessage}
+      />
+
+      <ReadReceiptDialog
+        open={!!readReceiptMessageId}
+        onOpenChange={(open) => !open && setReadReceiptMessageId(null)}
+        receipts={
+          readReceiptMessageId
+            ? members
+                .filter(m => m.user_id !== currentUserId)
+                .map(m => {
+                  const read = messageReads[readReceiptMessageId]?.find(r => r.user_id === m.user_id);
+                  return {
+                    userId: m.user_id,
+                    userName: m.profile?.full_name || m.profile?.username || "User",
+                    avatarUrl: null,
+                    readAt: read?.read_at || null,
+                  };
+                })
+            : []
+        }
       />
     </div>
   );
