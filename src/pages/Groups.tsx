@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useGroups, useGroupDetails, Group } from "@/hooks/useGroups";
+import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,6 +72,54 @@ const Groups = () => {
     deleteMessage,
     clearChat,
   } = useGroupDetails(selectedGroupId);
+
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+
+  // Fetch unread message counts per group
+  const fetchUnreadCounts = useCallback(async () => {
+    if (!user || groups.length === 0) return;
+
+    try {
+      const groupIds = groups.map(g => g.id);
+      const { data: allMessages, error: msgError } = await supabase
+        .from('group_messages')
+        .select('id, group_id')
+        .in('group_id', groupIds)
+        .neq('user_id', user.id);
+
+      if (msgError || !allMessages || allMessages.length === 0) {
+        setUnreadCounts({});
+        return;
+      }
+
+      const messageIds = allMessages.map(m => m.id);
+      const { data: reads, error: readError } = await supabase
+        .from('message_reads')
+        .select('message_id')
+        .in('message_id', messageIds)
+        .eq('user_id', user.id);
+
+      if (readError) {
+        setUnreadCounts({});
+        return;
+      }
+
+      const readSet = new Set(reads?.map(r => r.message_id) || []);
+      const counts: Record<string, number> = {};
+      allMessages.forEach(m => {
+        if (!readSet.has(m.id)) {
+          counts[m.group_id] = (counts[m.group_id] || 0) + 1;
+        }
+      });
+      setUnreadCounts(counts);
+    } catch {
+      // silently fail
+    }
+  }, [user, groups]);
+
+  useEffect(() => {
+    fetchUnreadCounts();
+  }, [fetchUnreadCounts, messages]);
 
   const isOwner = group?.owner_id === user?.id;
   const isAdmin = members.some(
@@ -252,6 +301,7 @@ const Groups = () => {
                     isSelected={selectedGroupId === g.id}
                     isOwner={g.owner_id === user.id}
                     lastMessage={getLastMessage(g.id)}
+                    unreadCount={unreadCounts[g.id] || 0}
                     onSelect={() => handleSelectGroup(g.id)}
                     onCopyCode={() => handleCopyInviteCode(g.invite_code)}
                     onDelete={() => handleDeleteGroup(g.id)}
