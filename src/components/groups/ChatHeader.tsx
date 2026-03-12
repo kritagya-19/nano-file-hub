@@ -20,16 +20,12 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   MoreVertical,
-  Phone,
-  Video,
   Search,
   Star,
   Trash2,
   LogOut,
   Users,
-  Bell,
-  BellOff,
-  Image,
+  ArrowLeft,
 } from "lucide-react";
 
 interface ChatHeaderProps {
@@ -43,6 +39,7 @@ interface ChatHeaderProps {
   onClearChat: () => void;
   onLeaveGroup: () => void;
   onSearch?: () => void;
+  onBack?: () => void;
 }
 
 export const ChatHeader = ({
@@ -56,6 +53,7 @@ export const ChatHeader = ({
   onClearChat,
   onLeaveGroup,
   onSearch,
+  onBack,
 }: ChatHeaderProps) => {
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -72,30 +70,42 @@ export const ChatHeader = ({
   return (
     <>
       <div className="h-14 sm:h-16 px-2 sm:px-4 flex items-center justify-between bg-card border-b border-border">
-        {/* Left: Avatar + Group Info */}
-        <button
-          onClick={onOpenDetails}
-          className="flex items-center gap-2 sm:gap-3 min-w-0 hover:opacity-80 transition-opacity py-2 pr-2"
-        >
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-primary/20 flex items-center justify-center shrink-0 overflow-hidden">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={groupName} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-sm sm:text-base font-semibold text-primary">
-                {getInitials(groupName)}
-              </span>
-            )}
-          </div>
-          <div className="min-w-0 text-left">
-            <h2 className="font-semibold text-foreground truncate text-sm sm:text-base">
-              {groupName}
-            </h2>
-            <p className="text-xs text-muted-foreground truncate">
-              {memberCount} {memberCount === 1 ? "participant" : "participants"}
-              {onlineCount > 0 && `, ${onlineCount} online`}
-            </p>
-          </div>
-        </button>
+        {/* Left: Back + Avatar + Group Info */}
+        <div className="flex items-center gap-1 min-w-0">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0 md:hidden"
+              onClick={onBack}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
+          <button
+            onClick={onOpenDetails}
+            className="flex items-center gap-2 sm:gap-3 min-w-0 hover:opacity-80 transition-opacity py-2 pr-2"
+          >
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-primary/20 flex items-center justify-center shrink-0 overflow-hidden">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={groupName} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-sm sm:text-base font-semibold text-primary">
+                  {getInitials(groupName)}
+                </span>
+              )}
+            </div>
+            <div className="min-w-0 text-left">
+              <h2 className="font-semibold text-foreground truncate text-sm sm:text-base">
+                {groupName}
+              </h2>
+              <p className="text-xs text-muted-foreground truncate">
+                {memberCount} {memberCount === 1 ? "participant" : "participants"}
+                {onlineCount > 0 && `, ${onlineCount} online`}
+              </p>
+            </div>
+          </button>
+        </div>
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1">

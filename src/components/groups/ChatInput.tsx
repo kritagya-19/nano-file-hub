@@ -1,7 +1,13 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Smile, Paperclip, Mic, Send, X, Image, File } from "lucide-react";
+import { Smile, Paperclip, Mic, Send, X, Image, File, Reply } from "lucide-react";
+
+interface ReplyTo {
+  id: string;
+  content: string;
+  userName: string;
+}
 
 interface ChatInputProps {
   onSendMessage: (content: string) => void;
@@ -10,6 +16,8 @@ interface ChatInputProps {
   onRemoveFile: () => void;
   disabled?: boolean;
   isUploading?: boolean;
+  replyTo?: ReplyTo | null;
+  onCancelReply?: () => void;
 }
 
 const formatFileSize = (bytes: number) => {
@@ -29,6 +37,8 @@ export const ChatInput = ({
   onRemoveFile,
   disabled = false,
   isUploading = false,
+  replyTo,
+  onCancelReply,
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -53,7 +63,6 @@ export const ChatInput = ({
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
-    // Auto-resize
     const textarea = e.target;
     textarea.style.height = "auto";
     textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
@@ -71,6 +80,27 @@ export const ChatInput = ({
 
   return (
     <div className="border-t border-border bg-card">
+      {/* Reply Preview */}
+      {replyTo && (
+        <div className="px-3 sm:px-4 py-2 bg-muted/30 border-b border-border">
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-background border-l-2 border-primary max-w-sm">
+            <Reply className="w-4 h-4 text-primary shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-primary">{replyTo.userName}</p>
+              <p className="text-xs text-muted-foreground truncate">{replyTo.content}</p>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 shrink-0" 
+              onClick={onCancelReply}
+            >
+              <X className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* File Preview */}
       {selectedFile && (
         <div className="px-3 sm:px-4 py-2 bg-muted/30 border-b border-border">
@@ -136,7 +166,7 @@ export const ChatInput = ({
             value={message}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
-            placeholder={selectedFile ? "Add a caption..." : "Type a message"}
+            placeholder={replyTo ? "Type a reply..." : selectedFile ? "Add a caption..." : "Type a message"}
             disabled={disabled}
             rows={1}
             className={cn(
