@@ -299,6 +299,7 @@ const Groups = () => {
               onStarMessage={starMessage}
               onUnstarMessage={unstarMessage}
               onDeleteMessage={deleteMessage}
+              onBack={() => setShowMobileChat(false)}
             />
           )}
         </div>
