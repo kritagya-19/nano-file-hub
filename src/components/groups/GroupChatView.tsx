@@ -282,11 +282,16 @@ export const GroupChatView = ({
     replyMap.set(m.id, { content: m.content, user_name: name });
   });
 
-  // Enrich messages with reply info and reactions
+  // Enrich messages with reply info, reactions, and read info
+  const otherMembersCount = members.filter(m => m.user_id !== currentUserId).length;
   const enrichedMessages: MessageData[] = messages.map(m => ({
     ...m,
     reply_to_message: m.reply_to ? replyMap.get(m.reply_to) || null : null,
     reactions: reactions[m.id] || [],
+    readInfo: m.user_id === currentUserId ? {
+      readByCount: messageReads[m.id]?.length || 0,
+      totalMembers: otherMembersCount,
+    } : undefined,
   }));
 
   // Group messages by date
