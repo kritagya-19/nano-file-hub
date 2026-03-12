@@ -63,6 +63,7 @@ interface MessageBubbleProps {
   onCopy: (content: string) => void;
   onReply?: (message: MessageData) => void;
   onReact?: (messageId: string, emoji: string) => void;
+  onShowReadReceipts?: (messageId: string) => void;
 }
 
 const formatFileSize = (bytes: number) => {
