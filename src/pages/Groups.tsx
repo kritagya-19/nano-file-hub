@@ -55,6 +55,24 @@ const Groups = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [showMobileChat, setShowMobileChat] = useState(false);
+
+  const {
+    group,
+    members,
+    messages,
+    files: groupFiles,
+    loading: detailsLoading,
+    sendMessage,
+    inviteByUsername,
+    removeMember,
+    shareFile,
+    unshareFile,
+    starMessage,
+    unstarMessage,
+    deleteMessage,
+    clearChat,
+  } = useGroupDetails(selectedGroupId);
+
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
   // Fetch unread message counts per group
@@ -62,7 +80,6 @@ const Groups = () => {
     if (!user || groups.length === 0) return;
 
     try {
-      // Get all messages across all groups not sent by current user
       const groupIds = groups.map(g => g.id);
       const { data: allMessages, error: msgError } = await supabase
         .from('group_messages')
@@ -76,7 +93,6 @@ const Groups = () => {
       }
 
       const messageIds = allMessages.map(m => m.id);
-      // Get which of these the current user has read
       const { data: reads, error: readError } = await supabase
         .from('message_reads')
         .select('message_id')
@@ -104,23 +120,6 @@ const Groups = () => {
   useEffect(() => {
     fetchUnreadCounts();
   }, [fetchUnreadCounts, messages]);
-
-  const {
-    group,
-    members,
-    messages,
-    files: groupFiles,
-    loading: detailsLoading,
-    sendMessage,
-    inviteByUsername,
-    removeMember,
-    shareFile,
-    unshareFile,
-    starMessage,
-    unstarMessage,
-    deleteMessage,
-    clearChat,
-  } = useGroupDetails(selectedGroupId);
 
   const isOwner = group?.owner_id === user?.id;
   const isAdmin = members.some(
