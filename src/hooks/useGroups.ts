@@ -35,6 +35,7 @@ export interface GroupMessage {
   file_type?: string | null;
   file_size?: number | null;
   starred_by?: string[];
+  reply_to?: string | null;
   profile?: {
     full_name: string | null;
     username: string | null;
@@ -395,7 +396,8 @@ export const useGroupDetails = (groupId: string | null) => {
   // Send a message with optional file attachment
   const sendMessage = async (
     content: string,
-    fileData?: { url: string; name: string; type: string; size: number }
+    fileData?: { url: string; name: string; type: string; size: number },
+    replyToId?: string
   ): Promise<boolean> => {
     if (!groupId || !user || (!content.trim() && !fileData)) return false;
 
@@ -413,6 +415,10 @@ export const useGroupDetails = (groupId: string | null) => {
         messageData.file_size = fileData.size;
       }
 
+      if (replyToId) {
+        messageData.reply_to = replyToId;
+      }
+
       const { error } = await supabase.from('group_messages').insert(messageData);
 
       if (error) throw error;
@@ -428,6 +434,7 @@ export const useGroupDetails = (groupId: string | null) => {
         file_name: fileData?.name || null,
         file_type: fileData?.type || null,
         file_size: fileData?.size || null,
+        reply_to: replyToId || null,
         profile: {
           full_name: null,
           username: null,

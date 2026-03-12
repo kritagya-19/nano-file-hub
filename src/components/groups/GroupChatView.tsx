@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, MessageSquare, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 import { ChatHeader } from "./ChatHeader";
 import { ChatInput } from "./ChatInput";
-import { MessageBubble, MessageData } from "./MessageBubble";
+import { MessageBubble, MessageData, MessageReaction } from "./MessageBubble";
 import { StarredMessagesSheet } from "./StarredMessagesSheet";
 
 interface GroupChatViewProps {
@@ -22,13 +21,14 @@ interface GroupChatViewProps {
   members: any[];
   currentUserId: string;
   isOwner: boolean;
-  onSendMessage: (content: string, fileData?: { url: string; name: string; type: string; size: number }) => Promise<boolean>;
+  onSendMessage: (content: string, fileData?: { url: string; name: string; type: string; size: number }, replyToId?: string) => Promise<boolean>;
   onOpenDetails: () => void;
   onLeaveGroup: () => void;
   onClearChat: () => void;
   onStarMessage: (messageId: string) => void;
   onUnstarMessage: (messageId: string) => void;
   onDeleteMessage: (messageId: string) => void;
+  onBack?: () => void;
 }
 
 const formatMessageDate = (date: Date) => {
@@ -50,11 +50,14 @@ export const GroupChatView = ({
   onStarMessage,
   onUnstarMessage,
   onDeleteMessage,
+  onBack,
 }: GroupChatViewProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [showStarred, setShowStarred] = useState(false);
+  const [replyTo, setReplyTo] = useState<{ id: string; content: string; userName: string } | null>(null);
+  const [reactions, setReactions] = useState<Record<string, MessageReaction[]>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -65,13 +68,92 @@ export const GroupChatView = ({
     }
   }, [messages]);
 
+  // Fetch reactions for current group messages
+  useEffect(() => {
+    const fetchReactions = async () => {
+      if (messages.length === 0) return;
+      const messageIds = messages.map(m => m.id);
+      
+      const { data, error } = await supabase
+        .from('message_reactions')
+        .select('*')
+        .in('message_id', messageIds);
+
+      if (error || !data) return;
+
+      const grouped: Record<string, MessageReaction[]> = {};
+      data.forEach((r: any) => {
+        if (!grouped[r.message_id]) grouped[r.message_id] = [];
+        const existing = grouped[r.message_id].find(e => e.emoji === r.emoji);
+        if (existing) {
+          existing.count++;
+          existing.userIds.push(r.user_id);
+          if (r.user_id === currentUserId) existing.reactedByMe = true;
+        } else {
+          grouped[r.message_id].push({
+            emoji: r.emoji,
+            count: 1,
+            userIds: [r.user_id],
+            reactedByMe: r.user_id === currentUserId,
+          });
+        }
+      });
+      setReactions(grouped);
+    };
+
+    fetchReactions();
+  }, [messages, currentUserId]);
+
+  const handleReact = async (messageId: string, emoji: string) => {
+    // Check if already reacted with this emoji
+    const existing = reactions[messageId]?.find(r => r.emoji === emoji && r.reactedByMe);
+    
+    if (existing) {
+      // Remove reaction
+      await supabase
+        .from('message_reactions')
+        .delete()
+        .eq('message_id', messageId)
+        .eq('user_id', currentUserId)
+        .eq('emoji', emoji);
+
+      setReactions(prev => {
+        const updated = { ...prev };
+        if (updated[messageId]) {
+          updated[messageId] = updated[messageId]
+            .map(r => r.emoji === emoji ? { ...r, count: r.count - 1, reactedByMe: false, userIds: r.userIds.filter(id => id !== currentUserId) } : r)
+            .filter(r => r.count > 0);
+        }
+        return updated;
+      });
+    } else {
+      // Add reaction
+      const { error } = await supabase.from('message_reactions').insert({
+        message_id: messageId,
+        user_id: currentUserId,
+        emoji,
+      });
+      if (error) return;
+
+      setReactions(prev => {
+        const updated = { ...prev };
+        if (!updated[messageId]) updated[messageId] = [];
+        const ex = updated[messageId].find(r => r.emoji === emoji);
+        if (ex) {
+          updated[messageId] = updated[messageId].map(r =>
+            r.emoji === emoji ? { ...r, count: r.count + 1, reactedByMe: true, userIds: [...r.userIds, currentUserId] } : r
+          );
+        } else {
+          updated[messageId] = [...updated[messageId], { emoji, count: 1, userIds: [currentUserId], reactedByMe: true }];
+        }
+        return updated;
+      });
+    }
+  };
+
   const handleFileAttach = (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
-      toast({
-        variant: "destructive",
-        title: "File too large",
-        description: "Maximum file size is 10MB",
-      });
+      toast({ variant: "destructive", title: "File too large", description: "Maximum file size is 10MB" });
       return;
     }
     setSelectedFile(file);
@@ -81,32 +163,13 @@ export const GroupChatView = ({
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `group-chat/${group.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("user-files")
-        .upload(fileName, file);
-
+      const { error: uploadError } = await supabase.storage.from("user-files").upload(fileName, file);
       if (uploadError) throw uploadError;
-
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from("user-files")
-        .createSignedUrl(fileName, 60 * 60 * 24 * 365);
-
+      const { data: signedData, error: signedError } = await supabase.storage.from("user-files").createSignedUrl(fileName, 60 * 60 * 24 * 365);
       if (signedError) throw signedError;
-
-      return {
-        url: signedData.signedUrl,
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      };
+      return { url: signedData.signedUrl, name: file.name, type: file.type, size: file.size };
     } catch (error: any) {
-      console.error("Upload error:", error);
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description: error.message || "Could not upload file",
-      });
+      toast({ variant: "destructive", title: "Upload failed", description: error.message || "Could not upload file" });
       return null;
     }
   };
@@ -121,22 +184,20 @@ export const GroupChatView = ({
       setIsUploading(true);
       const uploaded = await uploadFile(selectedFile);
       setIsUploading(false);
-
-      if (!uploaded) {
-        setIsSending(false);
-        return;
-      }
+      if (!uploaded) { setIsSending(false); return; }
       fileData = uploaded;
     }
 
     const success = await onSendMessage(
       content || (selectedFile ? `Shared a file: ${selectedFile.name}` : ""),
-      fileData
+      fileData,
+      replyTo?.id
     );
 
     setIsSending(false);
     if (success) {
       setSelectedFile(null);
+      setReplyTo(null);
     }
   };
 
@@ -145,9 +206,28 @@ export const GroupChatView = ({
     toast({ title: "Copied to clipboard" });
   };
 
+  const handleReply = (message: MessageData) => {
+    const userName = message.profile?.full_name || message.profile?.username || "User";
+    setReplyTo({ id: message.id, content: message.content, userName });
+  };
+
+  // Build reply lookup map
+  const replyMap = new Map<string, { content: string; user_name: string }>();
+  messages.forEach(m => {
+    const name = m.profile?.full_name || m.profile?.username || "User";
+    replyMap.set(m.id, { content: m.content, user_name: name });
+  });
+
+  // Enrich messages with reply info and reactions
+  const enrichedMessages: MessageData[] = messages.map(m => ({
+    ...m,
+    reply_to_message: m.reply_to ? replyMap.get(m.reply_to) || null : null,
+    reactions: reactions[m.id] || [],
+  }));
+
   // Group messages by date
   const groupedMessages: { date: Date; messages: MessageData[] }[] = [];
-  messages.forEach((message) => {
+  enrichedMessages.forEach((message) => {
     const messageDate = new Date(message.created_at);
     const lastGroup = groupedMessages[groupedMessages.length - 1];
     if (lastGroup && isSameDay(lastGroup.date, messageDate)) {
@@ -159,7 +239,6 @@ export const GroupChatView = ({
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header */}
       <ChatHeader
         groupName={group.name}
         memberCount={members.length}
@@ -168,9 +247,9 @@ export const GroupChatView = ({
         onViewStarred={() => setShowStarred(true)}
         onClearChat={onClearChat}
         onLeaveGroup={onLeaveGroup}
+        onBack={onBack}
       />
 
-      {/* Messages Area */}
       <div 
         ref={scrollRef}
         className="flex-1 overflow-y-auto bg-[url('/chat-bg-pattern.png')] bg-repeat"
@@ -178,7 +257,7 @@ export const GroupChatView = ({
           backgroundImage: `linear-gradient(rgba(var(--background), 0.92), rgba(var(--background), 0.92))`,
         }}
       >
-        {messages.length === 0 ? (
+        {enrichedMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full px-4">
             <div className="text-center max-w-xs">
               <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -187,27 +266,22 @@ export const GroupChatView = ({
               <p className="text-sm text-muted-foreground mb-2">
                 Messages and calls are end-to-end encrypted. No one outside of this chat can read or listen to them.
               </p>
-              <p className="text-xs text-muted-foreground">
-                Start the conversation!
-              </p>
+              <p className="text-xs text-muted-foreground">Start the conversation!</p>
             </div>
           </div>
         ) : (
           <div className="py-2 space-y-1">
-            {groupedMessages.map((group) => (
-              <div key={group.date.toISOString()}>
-                {/* Date Separator */}
+            {groupedMessages.map((g) => (
+              <div key={g.date.toISOString()}>
                 <div className="flex justify-center py-2 px-4">
                   <span className="text-[11px] font-medium text-muted-foreground bg-muted/80 px-3 py-1 rounded-md shadow-sm">
-                    {formatMessageDate(group.date)}
+                    {formatMessageDate(g.date)}
                   </span>
                 </div>
-
-                {/* Messages */}
                 <div className="space-y-0.5">
-                  {group.messages.map((message, idx) => {
+                  {g.messages.map((message, idx) => {
                     const isOwn = message.user_id === currentUserId;
-                    const prevMessage = group.messages[idx - 1];
+                    const prevMessage = g.messages[idx - 1];
                     const showAvatar = !prevMessage || prevMessage.user_id !== message.user_id;
                     const showName = !isOwn && showAvatar;
 
@@ -223,6 +297,8 @@ export const GroupChatView = ({
                         onUnstar={onUnstarMessage}
                         onDelete={onDeleteMessage}
                         onCopy={handleCopy}
+                        onReply={handleReply}
+                        onReact={handleReact}
                       />
                     );
                   })}
@@ -233,7 +309,6 @@ export const GroupChatView = ({
         )}
       </div>
 
-      {/* Input */}
       <ChatInput
         onSendMessage={handleSendMessage}
         onAttachFile={handleFileAttach}
@@ -241,13 +316,14 @@ export const GroupChatView = ({
         onRemoveFile={() => setSelectedFile(null)}
         disabled={isSending}
         isUploading={isUploading}
+        replyTo={replyTo}
+        onCancelReply={() => setReplyTo(null)}
       />
 
-      {/* Starred Messages Sheet */}
       <StarredMessagesSheet
         open={showStarred}
         onOpenChange={setShowStarred}
-        messages={messages}
+        messages={enrichedMessages}
         currentUserId={currentUserId}
         onUnstar={onUnstarMessage}
       />

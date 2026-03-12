@@ -184,6 +184,7 @@ export type Database = {
           group_id: string
           id: string
           is_starred: boolean
+          reply_to: string | null
           starred_by: string[] | null
           user_id: string
         }
@@ -197,6 +198,7 @@ export type Database = {
           group_id: string
           id?: string
           is_starred?: boolean
+          reply_to?: string | null
           starred_by?: string[] | null
           user_id: string
         }
@@ -210,6 +212,7 @@ export type Database = {
           group_id?: string
           id?: string
           is_starred?: boolean
+          reply_to?: string | null
           starred_by?: string[] | null
           user_id?: string
         }
@@ -219,6 +222,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "group_messages"
             referencedColumns: ["id"]
           },
         ]
@@ -252,6 +262,38 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "group_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
