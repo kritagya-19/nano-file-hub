@@ -366,8 +366,8 @@ export const GroupChatView = ({
                         onUnstar={onUnstarMessage}
                         onDelete={onDeleteMessage}
                         onCopy={handleCopy}
-                        onReply={handleReply}
                         onReact={handleReact}
+                        onShowReadReceipts={(msgId) => setReadReceiptMessageId(msgId)}
                       />
                     );
                   })}
