@@ -55,6 +55,55 @@ const Groups = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [showMobileChat, setShowMobileChat] = useState(false);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+
+  // Fetch unread message counts per group
+  const fetchUnreadCounts = useCallback(async () => {
+    if (!user || groups.length === 0) return;
+
+    try {
+      // Get all messages across all groups not sent by current user
+      const groupIds = groups.map(g => g.id);
+      const { data: allMessages, error: msgError } = await supabase
+        .from('group_messages')
+        .select('id, group_id')
+        .in('group_id', groupIds)
+        .neq('user_id', user.id);
+
+      if (msgError || !allMessages || allMessages.length === 0) {
+        setUnreadCounts({});
+        return;
+      }
+
+      const messageIds = allMessages.map(m => m.id);
+      // Get which of these the current user has read
+      const { data: reads, error: readError } = await supabase
+        .from('message_reads')
+        .select('message_id')
+        .in('message_id', messageIds)
+        .eq('user_id', user.id);
+
+      if (readError) {
+        setUnreadCounts({});
+        return;
+      }
+
+      const readSet = new Set(reads?.map(r => r.message_id) || []);
+      const counts: Record<string, number> = {};
+      allMessages.forEach(m => {
+        if (!readSet.has(m.id)) {
+          counts[m.group_id] = (counts[m.group_id] || 0) + 1;
+        }
+      });
+      setUnreadCounts(counts);
+    } catch {
+      // silently fail
+    }
+  }, [user, groups]);
+
+  useEffect(() => {
+    fetchUnreadCounts();
+  }, [fetchUnreadCounts, messages]);
 
   const {
     group,
