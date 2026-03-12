@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ import { ChatHeader } from "./ChatHeader";
 import { ChatInput } from "./ChatInput";
 import { MessageBubble, MessageData, MessageReaction } from "./MessageBubble";
 import { StarredMessagesSheet } from "./StarredMessagesSheet";
+import { ReadReceiptDialog, ReadReceipt } from "./ReadReceiptDialog";
 
 interface GroupChatViewProps {
   group: {
