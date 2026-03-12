@@ -22,6 +22,11 @@ export interface MessageReaction {
   reactedByMe: boolean;
 }
 
+export interface MessageReadInfo {
+  readByCount: number;
+  totalMembers: number; // excluding sender
+}
+
 export interface MessageData {
   id: string;
   content: string;
@@ -38,6 +43,7 @@ export interface MessageData {
     user_name: string;
   } | null;
   reactions?: MessageReaction[];
+  readInfo?: MessageReadInfo;
   profile?: {
     full_name?: string | null;
     username?: string | null;
