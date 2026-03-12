@@ -247,7 +247,20 @@ export const MessageBubble = ({
                     {format(new Date(message.created_at), "h:mm a")}
                   </span>
                   {isOwn && (
-                    <CheckCheck className="w-3.5 h-3.5 ml-0.5" />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onShowReadReceipts?.(message.id);
+                      }}
+                      className="inline-flex items-center hover:opacity-80 transition-opacity"
+                      title="Message info"
+                    >
+                      {message.readInfo && message.readInfo.readByCount > 0 ? (
+                        <CheckCheck className="w-3.5 h-3.5 ml-0.5 text-blue-400" />
+                      ) : (
+                        <Check className="w-3.5 h-3.5 ml-0.5" />
+                      )}
+                    </button>
                   )}
                 </div>
               </div>
