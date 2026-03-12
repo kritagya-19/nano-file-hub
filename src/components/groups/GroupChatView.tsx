@@ -396,6 +396,26 @@ export const GroupChatView = ({
         currentUserId={currentUserId}
         onUnstar={onUnstarMessage}
       />
+
+      <ReadReceiptDialog
+        open={!!readReceiptMessageId}
+        onOpenChange={(open) => !open && setReadReceiptMessageId(null)}
+        receipts={
+          readReceiptMessageId
+            ? members
+                .filter(m => m.user_id !== currentUserId)
+                .map(m => {
+                  const read = messageReads[readReceiptMessageId]?.find(r => r.user_id === m.user_id);
+                  return {
+                    userId: m.user_id,
+                    userName: m.profile?.full_name || m.profile?.username || "User",
+                    avatarUrl: null,
+                    readAt: read?.read_at || null,
+                  };
+                })
+            : []
+        }
+      />
     </div>
   );
 };
