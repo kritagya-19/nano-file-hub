@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -29,6 +30,7 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  Shield,
 } from "lucide-react";
 
 const mainNavItems = [
@@ -51,6 +53,7 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ storageUsed, storageTotal }: DashboardSidebarProps) {
   const { state, toggleSidebar } = useSidebar();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const collapsed = state === "collapsed";
 
@@ -153,6 +156,27 @@ export function DashboardSidebar({ storageUsed, storageTotal }: DashboardSidebar
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+            {isAdmin && (
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild tooltip={collapsed ? "Admin Panel" : undefined}>
+                    <NavLink
+                      to="/admin"
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-xl",
+                        "text-primary hover:text-primary",
+                        "hover:bg-primary/10 transition-all duration-200 mt-1",
+                        collapsed && "justify-center px-2"
+                      )}
+                      activeClassName="bg-primary/10 text-primary font-medium"
+                    >
+                      <Shield className="w-5 h-5 shrink-0" />
+                      {!collapsed && <span className="font-semibold">Admin Panel</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            )}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

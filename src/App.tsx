@@ -12,6 +12,10 @@ import Groups from "./pages/Groups";
 import Shared from "./pages/Shared";
 import Settings from "./pages/Settings";
 import Share from "./pages/Share";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminFiles from "./pages/admin/AdminFiles";
+import AdminGroups from "./pages/admin/AdminGroups";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +37,10 @@ const App = () => (
             <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/dashboard/help" element={<Dashboard />} />
             <Route path="/share/:shareToken" element={<Share />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/files" element={<AdminFiles />} />
+            <Route path="/admin/groups" element={<AdminGroups />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
