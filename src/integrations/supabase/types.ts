@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_emails: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
       files: {
         Row: {
           created_at: string
@@ -404,6 +422,24 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -412,6 +448,14 @@ export type Database = {
       create_group: {
         Args: { _description?: string; _name: string }
         Returns: string
+      }
+      get_admin_stats: { Args: never; Returns: Json }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
       }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
@@ -424,6 +468,7 @@ export type Database = {
       join_group_by_code: { Args: { code: string }; Returns: string }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       group_role: "owner" | "admin" | "member"
     }
     CompositeTypes: {
@@ -552,6 +597,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       group_role: ["owner", "admin", "member"],
     },
   },
