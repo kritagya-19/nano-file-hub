@@ -53,6 +53,7 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ storageUsed, storageTotal }: DashboardSidebarProps) {
   const { state, toggleSidebar } = useSidebar();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const collapsed = state === "collapsed";
 
