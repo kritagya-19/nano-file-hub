@@ -30,6 +30,7 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  Shield,
 } from "lucide-react";
 
 const mainNavItems = [
