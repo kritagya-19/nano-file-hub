@@ -37,6 +37,10 @@ const App = () => (
             <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/dashboard/help" element={<Dashboard />} />
             <Route path="/share/:shareToken" element={<Share />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/files" element={<AdminFiles />} />
+            <Route path="/admin/groups" element={<AdminGroups />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
