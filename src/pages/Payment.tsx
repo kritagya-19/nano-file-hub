@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   CreditCard,
   Smartphone,
@@ -17,13 +19,14 @@ import {
 
 type PaymentMethod = "card" | "upi";
 
-const planDetails: Record<string, { name: string; price: string; period: string }> = {
-  Pro: { name: "Pro", price: "$12", period: "/month" },
-  Max: { name: "Max", price: "$29", period: "/month" },
+const planDetails: Record<string, { name: string; price: number; priceLabel: string; period: string }> = {
+  Pro: { name: "Pro", price: 12, priceLabel: "$12", period: "/month" },
+  Max: { name: "Max", price: 29, priceLabel: "$29", period: "/month" },
 };
 
 const Payment = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const planName = searchParams.get("plan") || "Pro";
   const plan = planDetails[planName] || planDetails.Pro;
@@ -32,13 +35,10 @@ const Payment = () => {
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Card fields
   const [cardNumber, setCardNumber] = useState("");
   const [cardName, setCardName] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
-
-  // UPI field
   const [upiId, setUpiId] = useState("");
 
   const formatCardNumber = (value: string) => {
@@ -56,14 +56,37 @@ const Payment = () => {
   const isUpiValid = /^[\w.-]+@[\w]+$/.test(upiId);
   const isFormValid = method === "card" ? isCardValid : isUpiValid;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    if (!isFormValid || !user) return;
     setProcessing(true);
-    setTimeout(() => {
+
+    // Simulate processing delay
+    await new Promise((r) => setTimeout(r, 2000));
+
+    // Save subscription to database
+    const now = new Date();
+    const expiresAt = new Date(now);
+    expiresAt.setDate(expiresAt.getDate() + 30);
+
+    const { error } = await supabase.from("subscriptions").insert({
+      user_id: user.id,
+      plan_name: plan.name,
+      price_amount: plan.price,
+      payment_method: method === "card" ? "Credit/Debit Card" : "UPI",
+      started_at: now.toISOString(),
+      expires_at: expiresAt.toISOString(),
+      status: "active",
+    });
+
+    if (error) {
+      toast.error("Failed to save subscription. Please try again.");
       setProcessing(false);
-      setSuccess(true);
-    }, 2000);
+      return;
+    }
+
+    setProcessing(false);
+    setSuccess(true);
   };
 
   if (success) {
@@ -79,10 +102,10 @@ const Payment = () => {
           </p>
           <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
             <p className="text-sm text-muted-foreground">Amount paid</p>
-            <p className="text-3xl font-bold text-foreground">{plan.price}<span className="text-sm font-normal text-muted-foreground">{plan.period}</span></p>
+            <p className="text-3xl font-bold text-foreground">{plan.priceLabel}<span className="text-sm font-normal text-muted-foreground">{plan.period}</span></p>
           </div>
-          <Button className="w-full" size="lg" onClick={() => navigate("/dashboard")}>
-            Go to Dashboard
+          <Button className="w-full" size="lg" onClick={() => navigate("/dashboard/upgrade")}>
+            View My Plan
           </Button>
         </Card>
       </div>
@@ -99,7 +122,6 @@ const Payment = () => {
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
 
-        {/* Order summary */}
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -107,13 +129,12 @@ const Payment = () => {
               <h2 className="text-xl font-bold text-foreground">{plan.name} Plan</h2>
             </div>
             <div className="text-right">
-              <p className="text-3xl font-bold text-foreground">{plan.price}</p>
+              <p className="text-3xl font-bold text-foreground">{plan.priceLabel}</p>
               <p className="text-sm text-muted-foreground">{plan.period}</p>
             </div>
           </div>
         </Card>
 
-        {/* Payment method selector */}
         <div className="grid grid-cols-2 gap-3">
           {([
             { key: "card" as const, label: "Credit / Debit Card", icon: CreditCard },
@@ -135,74 +156,42 @@ const Payment = () => {
           ))}
         </div>
 
-        {/* Payment form */}
         <Card className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {method === "card" ? (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="cardNumber">Card Number</Label>
-                  <Input
-                    id="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                    maxLength={19}
-                  />
+                  <Input id="cardNumber" placeholder="1234 5678 9012 3456" value={cardNumber} onChange={(e) => setCardNumber(formatCardNumber(e.target.value))} maxLength={19} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="cardName">Name on Card</Label>
-                  <Input
-                    id="cardName"
-                    placeholder="John Doe"
-                    value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
-                  />
+                  <Input id="cardName" placeholder="John Doe" value={cardName} onChange={(e) => setCardName(e.target.value)} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="expiry">Expiry Date</Label>
-                    <Input
-                      id="expiry"
-                      placeholder="MM/YY"
-                      value={expiry}
-                      onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-                      maxLength={5}
-                    />
+                    <Input id="expiry" placeholder="MM/YY" value={expiry} onChange={(e) => setExpiry(formatExpiry(e.target.value))} maxLength={5} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="cvv">CVV</Label>
-                    <Input
-                      id="cvv"
-                      placeholder="123"
-                      type="password"
-                      value={cvv}
-                      onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                      maxLength={4}
-                    />
+                    <Input id="cvv" placeholder="123" type="password" value={cvv} onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))} maxLength={4} />
                   </div>
                 </div>
               </>
             ) : (
               <div className="space-y-2">
                 <Label htmlFor="upiId">UPI ID</Label>
-                <Input
-                  id="upiId"
-                  placeholder="yourname@upi"
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                />
+                <Input id="upiId" placeholder="yourname@upi" value={upiId} onChange={(e) => setUpiId(e.target.value)} />
                 <p className="text-xs text-muted-foreground">Enter your UPI ID (e.g., name@okaxis, name@ybl)</p>
               </div>
             )}
 
             <Button type="submit" size="lg" className="w-full" disabled={!isFormValid || processing}>
               {processing ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...
-                </>
+                <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...</>
               ) : (
-                `Pay ${plan.price}`
+                `Pay ${plan.priceLabel}`
               )}
             </Button>
           </form>
