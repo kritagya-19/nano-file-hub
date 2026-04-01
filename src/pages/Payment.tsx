@@ -70,8 +70,8 @@ const Payment = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full p-8 text-center space-y-6">
-          <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
-            <CheckCircle2 className="w-10 h-10 text-green-500" />
+          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-10 h-10 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Payment Successful!</h1>
           <p className="text-muted-foreground">

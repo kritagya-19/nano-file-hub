@@ -12,6 +12,7 @@ import Groups from "./pages/Groups";
 import Shared from "./pages/Shared";
 import Settings from "./pages/Settings";
 import Share from "./pages/Share";
+import Payment from "./pages/Payment";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminFiles from "./pages/admin/AdminFiles";
