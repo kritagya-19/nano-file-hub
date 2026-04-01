@@ -68,10 +68,7 @@ const Pricing = () => {
     if (planName === "Free") {
       navigate("/auth");
     } else {
-      toast({
-        title: `${planName} Plan Selected`,
-        description: "This is a demo. Payment processing is not enabled yet.",
-      });
+      navigate(`/payment?plan=${planName}`);
     }
   };
 
