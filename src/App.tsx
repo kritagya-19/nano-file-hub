@@ -13,6 +13,7 @@ import Shared from "./pages/Shared";
 import Settings from "./pages/Settings";
 import Share from "./pages/Share";
 import Payment from "./pages/Payment";
+import Upgrade from "./pages/Upgrade";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminFiles from "./pages/admin/AdminFiles";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/dashboard/groups" element={<Groups />} />
             <Route path="/dashboard/shared" element={<Shared />} />
             <Route path="/dashboard/settings" element={<Settings />} />
+            <Route path="/dashboard/upgrade" element={<Upgrade />} />
             <Route path="/dashboard/help" element={<Dashboard />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/share/:shareToken" element={<Share />} />

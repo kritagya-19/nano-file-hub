@@ -197,6 +197,7 @@ const Dashboard = () => {
                   variant="secondary" 
                   size="sm" 
                   className="bg-white text-primary hover:bg-white/90"
+                  onClick={() => navigate("/dashboard/upgrade")}
                 >
                   Upgrade Now
                   <ArrowRight className="w-4 h-4 ml-2" />
