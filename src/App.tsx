@@ -37,6 +37,7 @@ const App = () => (
             <Route path="/dashboard/shared" element={<Shared />} />
             <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/dashboard/help" element={<Dashboard />} />
+            <Route path="/payment" element={<Payment />} />
             <Route path="/share/:shareToken" element={<Share />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
