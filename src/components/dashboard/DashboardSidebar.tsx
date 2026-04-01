@@ -38,6 +38,7 @@ const mainNavItems = [
   { title: "My Files", url: "/dashboard/files", icon: FolderOpen },
   { title: "Groups", url: "/dashboard/groups", icon: Users },
   { title: "Shared", url: "/dashboard/shared", icon: Share2 },
+  { title: "Upgrade Plan", url: "/dashboard/upgrade", icon: Sparkles },
 ];
 
 const secondaryNavItems = [
