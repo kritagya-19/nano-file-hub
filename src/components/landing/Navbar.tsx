@@ -22,6 +22,7 @@ const NavbarComponent = () => {
     { name: "Features", link: "#features" },
     { name: "How It Works", link: "#how-it-works" },
     { name: "Use Cases", link: "#use-cases" },
+    { name: "Pricing", link: "#pricing" },
   ];
 
   return (
