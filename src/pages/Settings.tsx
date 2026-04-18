@@ -9,6 +9,7 @@ import { ProfileSection } from "@/components/settings/ProfileSection";
 import { SecuritySection } from "@/components/settings/SecuritySection";
 import { NotificationsSection } from "@/components/settings/NotificationsSection";
 import { AppearanceSection } from "@/components/settings/AppearanceSection";
+import { BillingSection } from "@/components/settings/BillingSection";
 import { cn } from "@/lib/utils";
 import {
   Loader2,
@@ -17,6 +18,7 @@ import {
   Shield,
   Palette,
   ChevronRight,
+  CreditCard,
 } from "lucide-react";
 
 interface ProfileData {
@@ -36,6 +38,7 @@ interface NotificationSettings {
 
 const sections = [
   { id: "profile", label: "Profile", icon: User, description: "Your personal information" },
+  { id: "billing", label: "Billing & Plan", icon: CreditCard, description: "Subscription and invoices" },
   { id: "notifications", label: "Notifications", icon: Bell, description: "How you get notified" },
   { id: "appearance", label: "Appearance", icon: Palette, description: "Customize the look" },
   { id: "security", label: "Security", icon: Shield, description: "Password & account" },
@@ -111,6 +114,8 @@ const Settings = () => {
             setProfileData={setProfileData}
           />
         );
+      case "billing":
+        return <BillingSection />;
       case "notifications":
         return (
           <NotificationsSection
