@@ -52,19 +52,37 @@ export function DashboardSidebar({ storageUsed, storageTotal }: DashboardSidebar
         "transition-all duration-300"
       )}
     >
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-4 border-b border-border/50">
         <div className={cn(
-          "flex items-center gap-3",
-          collapsed && "justify-center"
+          "flex items-center gap-2",
+          collapsed ? "flex-col" : "justify-between"
         )}>
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/25 shrink-0">
-            <Cloud className="w-5 h-5 text-primary-foreground" />
+          <div className={cn(
+            "flex items-center gap-3",
+            collapsed && "justify-center"
+          )}>
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/25 shrink-0">
+              <Cloud className="w-5 h-5 text-primary-foreground" />
+            </div>
+            {!collapsed && (
+              <span className="text-lg font-bold text-foreground">
+                Nano<span className="text-primary">File</span>
+              </span>
+            )}
           </div>
-          {!collapsed && (
-            <span className="text-lg font-bold text-foreground">
-              Nano<span className="text-primary">File</span>
-            </span>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? (
+              <ChevronRight className="w-4 h-4" />
+            ) : (
+              <ChevronLeft className="w-4 h-4" />
+            )}
+          </Button>
         </div>
       </SidebarHeader>
 
@@ -138,23 +156,6 @@ export function DashboardSidebar({ storageUsed, storageTotal }: DashboardSidebar
       <SidebarFooter className="p-3 space-y-2 border-t border-border/50">
         {/* User Profile with dropdown menu */}
         <UserProfileMenu collapsed={collapsed} side="top" align="start" />
-
-        {/* Collapse toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className={cn(
-            "text-muted-foreground hover:text-foreground",
-            collapsed ? "mx-auto" : "ml-auto"
-          )}
-        >
-          {collapsed ? (
-            <ChevronRight className="w-4 h-4" />
-          ) : (
-            <ChevronLeft className="w-4 h-4" />
-          )}
-        </Button>
       </SidebarFooter>
     </Sidebar>
   );
