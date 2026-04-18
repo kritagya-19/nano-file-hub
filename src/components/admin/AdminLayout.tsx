@@ -24,8 +24,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const location = useLocation();
 
   useEffect(() => {
-    if (!authLoading && !user) navigate("/auth");
-    if (!authLoading && !adminLoading && user && !isAdmin) navigate("/dashboard");
+    if (!authLoading && !user) navigate("/admin/login");
+    if (!authLoading && !adminLoading && user && !isAdmin) navigate("/admin/login");
   }, [user, authLoading, isAdmin, adminLoading, navigate]);
 
   if (authLoading || adminLoading) {
