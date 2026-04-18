@@ -156,23 +156,6 @@ export function DashboardSidebar({ storageUsed, storageTotal }: DashboardSidebar
       <SidebarFooter className="p-3 space-y-2 border-t border-border/50">
         {/* User Profile with dropdown menu */}
         <UserProfileMenu collapsed={collapsed} side="top" align="start" />
-
-        {/* Collapse toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className={cn(
-            "text-muted-foreground hover:text-foreground",
-            collapsed ? "mx-auto" : "ml-auto"
-          )}
-        >
-          {collapsed ? (
-            <ChevronRight className="w-4 h-4" />
-          ) : (
-            <ChevronLeft className="w-4 h-4" />
-          )}
-        </Button>
       </SidebarFooter>
     </Sidebar>
   );
